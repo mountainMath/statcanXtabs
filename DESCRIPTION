@@ -1,0 +1,17 @@
+Package: statcanXtabs
+Type: Package
+Title: Helper function for managing StatCan xtabs
+Version: 0.1.0
+Author: Jens von Bergmann
+Maintainer: <jens@mountainmath.cat>
+Description: Methods for importing StatCan xtabs into sqlite and csv form.
+License: MIT
+Encoding: UTF-8
+LazyData: true
+Depends: dplyr (>= 0.7.2),
+  tidyr
+RoxygenNote: 6.1.1
+Suggests: knitr,
+    rmarkdown,
+    tidyverse
+VignetteBuilder: knitrs
