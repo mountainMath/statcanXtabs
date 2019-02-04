@@ -115,6 +115,97 @@ gather_xtab_values_transform <- function(data,remove_member_id=TRUE){
     gather(key=!!gather_name,value="Value",clean_value_columns)
 }
 
+
+get_tmp_zip_archive <- function(url,exdir=tempdir()){
+  message("Downloading data ...")
+  temp=tempfile(fileext = ".zip")
+  download.file(url,temp)
+  message("Unpacking data ...")
+  unzip_type=ifelse(is.null(getOption("unzip")),"internal",getOption("unzip"))
+  zipped_info <- utils::unzip(temp, list=TRUE,unzip=unzip_type)
+  large <- sum(zipped_info$Length) > 4000000000
+  if (large && unzip_type=="internal")
+    message(paste0("File might be too large for R internal unzip.\n",
+                   "If unzip fails, consider setting the 'R_UNZIPCMD' environment vairable or\n",
+                   "downlod and unzip the file manually and use the 'existing_unzip_path' parameter.\n",
+                   "Downloaded archive is at ",temp))
+  utils::unzip(temp,exdir=exdir,unzip=unzip_type)
+  unlink(temp)
+  zipped_info
+}
+
+
+parse_xml_xtab <- function(structure_path,generic_path){
+  xml_structure <- read_xml(structure_path)
+  xml_data <- read_xml(generic_path)
+  str_concepts <- xml_structure %>% xml_find_all("//structure:ConceptScheme")
+  var_concepts <- str_concepts %>%
+    xml_find_all("structure:Concept") %>%
+    xml_attr("id") %>% setdiff(c("TIME", "GEO", "OBS_VALUE", "OBS_STATUS" ))
+  concepts <- c("GEO",var_concepts)
+
+  concept_names <- lapply(concepts,function(c){
+    xml_structure %>% xml_find_all(paste0("//structure:ConceptScheme/structure:Concept[@id='",c,"']/structure:Name[@xml:lang='en']")) %>%
+      xml_text}) %>% unlist
+
+  concept_lookup <- rlang::set_names(concept_names,concepts)
+
+  descriptions_for_code <- function(c){
+    c <- gsub("0$","",c)
+    base <- xml_structure %>% xml_find_all(paste0("//structure:CodeList[@id='CL_",toupper(c),"']/structure:Code"))
+    desc_text = ifelse(length(xml_find_all(base[1] ,".//structure:Description[@xml:lang='en']"))==0,".//structure:Description",".//structure:Description[@xml:lang='en']")
+    rlang::set_names(
+      base %>% purrr::map(function(e){e %>% xml_find_all(desc_text) %>% xml_text}) %>% unlist %>% trimws(),
+      base %>% purrr::map(function(e){xml_attr(e,"value")}) %>% unlist
+    )
+  }
+
+  series <- xml_find_all(xml_data,"//generic:Series")
+
+  #series <- series[1:10]
+
+  #l <- lapply(concepts,function(c){series %>% xml_find_all(paste0(".//generic:Value[@concept='",c,"']")) %>% xml_attr("value")})
+
+  time_data <- function(series){
+    message("Extracting year data")
+    series %>% xml_find_all(".//generic:Time") %>% xml_text
+  }
+  value_data <- function(series){
+    message("Extracting values data")
+    #series %>% xml_find_all(".//generic:ObsValue") %>% xml_attr("value")
+    series %>% xml_find_all("./generic:Obs") %>% xml_find_first("./generic:ObsValue") %>% xml_attr("value")
+  }
+  code_data <- function(series,c){
+    message(paste0("Extracting data for ",concept_lookup[c]))
+    series %>% xml_find_all(paste0(".//generic:Value[@concept='",c,"']")) %>% xml_attr("value")
+  }
+
+  df=concepts %>%
+    purrr::map(function(c){code_data(series,c)}) %>%
+    rlang::set_names(concept_names) %>%
+    tibble::as_tibble() %>%
+    dplyr::bind_cols(tibble::tibble(Year = time_data(series), Value = value_data(series)))
+
+  for (i in seq(1,length(concepts),1)) {
+    c=concepts[i]
+    n=concept_names[i] %>% as.name
+    lookup <- descriptions_for_code(c)
+    nid=paste0(n," ID") %>% as.name
+    df <- df %>%
+      mutate(!!nid := !!n) %>%
+      mutate(!!n := lookup[!!nid])
+  }
+
+  fix_ct_geo_format <- function(geo){
+    ifelse(nchar(geo)==9,paste0(substr(geo,1,7),".",substr(geo,8,9)),geo)
+  }
+
+  df  %>%
+    rename(GeoUID=`Geography ID`) %>%
+    mutate(GeoUID = fix_ct_geo_format(GeoUID),
+           Value=as.numeric(Value))
+}
+
 #' get_sqlite_xtab
 #'
 #' @param code Code for the xtab, used for local caching
@@ -129,7 +220,8 @@ get_sqlite_xtab <- function(code,
                             cache_dir=getOption("statcanXtab.cache_dir"),
                             transform=standard_xtab_transform,
                             refresh=FALSE,
-                            existing_unzip_path=NA){
+                            existing_unzip_path=NA,
+                            format="csv"){
   if (is.null(cache_dir)) stop("Cache directory needs to be set!")
   sqlite_path <- file.path(cache_dir,paste0(code,".sqlite"))
   if (refresh || !file.exists(sqlite_path)) {
@@ -145,34 +237,45 @@ get_sqlite_xtab <- function(code,
                     "Please use a separate directory for each xtab."))
       }
     } else {
-      message("Downloading xtab ...")
-      temp=tempfile(fileext = ".zip")
-      download.file(url,temp)
-      message("Unpacking xtab ...")
-      unzip_type=ifelse(is.null(getOption("unzip")),"internal",getOption("unzip"))
-      zipped_info <- utils::unzip(temp, list=TRUE,unzip=unzip_type)
-      data_file=zipped_info$Name[grepl("_data\\.csv$",zipped_info$Name)]
-      large <- dplyr::filter(zipped_info,Name==data_file)$Length > 4000000000
       exdir=tempdir()
-      if (large && unzip_type=="internal")
-        message(paste0("File might be too large for R internal unzip.\n",
-                       "If unzip fails, consider setting the 'R_UNZIPCMD' environment vairable or\n",
-                       "downlod and unzip the file manually and use the 'existing_unzip_path' parameter.\n",
-                       "Downloaded archive is at ",temp))
-      utils::unzip(temp,exdir=exdir,unzip=unzip_type)
-      unlink(temp)
+      zipped_info <- get_tmp_zip_archive(url,exdir)
     }
     message("Importing xtab ...")
-    csv2sqlite(
-      csv_file=file.path(exdir,data_file),
-      sqlite_file=sqlite_path,
-      table_name="xtab_data",
-      col_types = readr::cols(.default = "c"),
-      transform = transform)
-    meta_file=zipped_info$Name[grepl("_meta\\.txt$",zipped_info$Name)& !grepl("README",zipped_info$Name)]
-    meta_lines <- read_lines(file.path(exdir,meta_file))
-    meta_path <- file.path(cache_dir,paste0(code,"_meta.txt"))
-    write_lines(meta_lines,meta_path)
+
+    if (format=='xml') {
+      clean_xml_names <- function(data){
+        n <- names(data)
+        n[grepl(" ID$",n)]=paste0("Member ID: ",gsub(" ID$","",n[grepl(" ID$",n)]))
+        rlang::set_names(data,n)
+        data
+      }
+      structure_path=file.path(exdir,zipped_info$Name[grepl("Structure_.*\\.xml$",zipped_info$Name)])
+      generic_path=file.path(exdir,zipped_info$Name[grepl("Generic_.*\\.xml$",zipped_info$Name)])
+      df <- parse_xml_xtab(structure_path,generic_path) %>%
+        clean_xml_names %>%
+        transform
+      con <- DBI::dbConnect(RSQLite::SQLite(), dbname=sqlite_path)
+      DBI::dbWriteTable(conn=con, name="xtab_data", value=df, append=FALSE,overwrite=TRUE)
+      DBI::dbDisconnect(con)
+    } else if (format =='csv') {
+      data_file=zipped_info$Name[grepl("_data\\.csv$",zipped_info$Name)]
+      if (length(data_file)!=1) stop(paste0("Could not find unique file to extract: ",paste0(data_file,collapse = ", ")))
+      meta_file=zipped_info$Name[grepl("_meta\\.txt$",zipped_info$Name)& !grepl("README",zipped_info$Name)]
+      meta_lines <- read_lines(file.path(exdir,meta_file))
+      meta_path <- file.path(cache_dir,paste0(code,"_meta.txt"))
+      write_lines(meta_lines,meta_path)
+
+      csv2sqlite(
+        csv_file=file.path(exdir,data_file),
+        sqlite_file=sqlite_path,
+        table_name="xtab_data",
+        col_types = readr::cols(.default = "c"),
+        transform = transform)
+
+    } else {
+      stop(paste0("Don't know how to import format ",format,"."))
+    }
+
     zipped_info$Name %>% file.path(exdir,.) %>% lapply(unlink)
   } else {
     message("Reading xtab from cache...")
@@ -196,7 +299,6 @@ standardize_xtab <- function(data){
     strip_columns_for_grep_string("^Notes: ") %>%
     dplyr::mutate(Value=as.numeric(Value,na=c("x", "F", "...", "..",NA)))
 }
-
 
 
 #' Download xml xtab data from url, tag with code for caching
