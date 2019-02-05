@@ -201,10 +201,39 @@ parse_xml_xtab <- function(structure_path,generic_path){
   }
 
   df  %>%
-    rename(GeoUID=`Geography ID`) %>%
-    mutate(GeoUID = fix_ct_geo_format(GeoUID),
+    dplyr::rename(GeoUID=`Geography ID`) %>%
+    dplyr::mutate(GeoUID = fix_ct_geo_format(GeoUID),
            Value=as.numeric(Value))
 }
+
+create_index <- function(connection,table_name,field){
+  field_index=paste0("index_",gsub("[^[:alnum:]]","_",field))
+  query=paste0("CREATE INDEX IF NOT EXISTS ",field_index," ON ",table_name," (`",field,"`)")
+  #print(query)
+  r<-DBI::dbSendQuery(connection,query)
+  DBI::dbClearResult(r)
+  NULL
+}
+
+#' create indices on index_fields in the sqlite database in case they don't exist
+#' @param sqlite_path path to the sqlite database
+#' @param table_name name of the table
+#' @param index_field optional vector of column names to index, defaul indexes all columns
+#'
+#' @export
+index_xtab_fields <- function(sqlite_path,table_name,index_fields=NULL){
+  con <- DBI::dbConnect(RSQLite::SQLite(), dbname=sqlite_path)
+  fields <- DBI::dbListFields(con,table_name)
+  if (!is.null(index_fields)) {
+    fields=intersect(fields,index_fields)
+    if (length(fields)!=length(index_fields)) {
+      warning(paste0("Could not find fields ",paste0(setdiff(index_fields,fields),collapse = ", ")))
+    }
+  }
+  lapply(fields,function(field)create_index(con,table_name,field))
+  DBI::dbDisconnect(con)
+}
+
 
 #' get_sqlite_xtab
 #'
@@ -241,7 +270,7 @@ get_sqlite_xtab <- function(code,
       zipped_info <- get_tmp_zip_archive(url,exdir)
     }
     message("Importing xtab ...")
-
+    table_name="xtab_data"
     if (format=='xml') {
       clean_xml_names <- function(data){
         n <- names(data)
@@ -255,8 +284,9 @@ get_sqlite_xtab <- function(code,
         clean_xml_names %>%
         transform
       con <- DBI::dbConnect(RSQLite::SQLite(), dbname=sqlite_path)
-      DBI::dbWriteTable(conn=con, name="xtab_data", value=df, append=FALSE,overwrite=TRUE)
+      DBI::dbWriteTable(conn=con, name=table_name, value=df, append=FALSE,overwrite=TRUE)
       DBI::dbDisconnect(con)
+      index_fields <- setdiff(names(df),"Value")
     } else if (format =='csv') {
       data_file=zipped_info$Name[grepl("_data\\.csv$",zipped_info$Name)]
       if (length(data_file)!=1) stop(paste0("Could not find unique file to extract: ",paste0(data_file,collapse = ", ")))
@@ -268,15 +298,19 @@ get_sqlite_xtab <- function(code,
       csv2sqlite(
         csv_file=file.path(exdir,data_file),
         sqlite_file=sqlite_path,
-        table_name="xtab_data",
+        table_name=table_name,
         col_types = readr::cols(.default = "c"),
         transform = transform)
-
+      index_fields = readr::read_csv(file.path(exdir,data_file),n_max=1,col_types=readr::cols(.default = "c")) %>%
+        dplyr::select(names(.)[grepl("^DIM: |GEO_CODE \\(POR\\)|ALT_GEO_CODE|CENSUS_YEAR|GeoUID|GEO_NAME",names(.))]) %>%
+        transform %>%
+        names
     } else {
       stop(paste0("Don't know how to import format ",format,"."))
     }
-
     zipped_info$Name %>% file.path(exdir,.) %>% lapply(unlink)
+
+    index_xtab_fields(sqlite_path,table_name,index_fields)
   } else {
     message("Reading xtab from cache...")
   }
