@@ -4,7 +4,7 @@
 \alias{index_xtab_fields}
 \title{create indices on index_fields in the sqlite database in case they don't exist}
 \usage{
-index_xtab_fields(sqlite_path, table_name, index_fields = NA)
+index_xtab_fields(sqlite_path, table_name, index_fields = NULL)
 }
 \arguments{
 \item{sqlite_path}{path to the sqlite database}
