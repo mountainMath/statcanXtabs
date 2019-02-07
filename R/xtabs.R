@@ -96,9 +96,11 @@ standard_xtab_transform <- function(data,remove_member_id=TRUE){
     numeric_xtab_values_transfrom
 }
 
-#' transform function for get_sqlite_xtab cleaning names
+#' transforms standard StatCan xtab to long form
+#' @param data data from get_sqlite_xtab afer calling collect()
 #' @export
-gather_xtab_values_transform <- function(data,remove_member_id=TRUE){
+tidy_xtab <- function(data,remove_member_id=FALSE){
+  if (!tibble::is_tibble(data)) stop("This function only works on tibbles. Please call `collect()` first.")
   value_columns <- names(data)[grepl("^Dim: ",names(data))]
   gather_name <- value_columns %>%
     gsub(": Member ID: .+$","",.) %>%
@@ -318,7 +320,19 @@ get_sqlite_xtab <- function(code,
     tbl("xtab_data")
 }
 
+xtab_download_url_for <- function(code) {
+  url=paste0("http://www12.statcan.gc.ca/global/URLRedirect.cfm?lang=E&ips=",code)
+  page <- httr::GET(url)
+  redirect <- page$all_headers[[2]]$headers$location
+}
 
+get_xtab_list <- function(year=2016) {
+  url="https://www150.statcan.gc.ca/n1/en/catalogue/98-400-X"
+  r<-httr::GET(url)
+  data <- httr::content(r)
+  table <- rvest::html_nodes(data,".pane-ndm-releases table")
+  rows <- rvest::html_nodes(table,"tr")
+}
 
 #' get xtab in long form
 #' @export
