@@ -8,63 +8,27 @@
 #' @param chunk_size optional chunk size to read/write data, default=1,000,000
 #' @param append optional parameter, append to database or overwrite, defaul=`FALSE`
 #'
-csv2sqlite <- function(csv_file, sqlite_file, table_name, transform=NULL,chunk_size=1000000, append=FALSE,col_types=NULL,na=c(NA,"..","F")) {
-  # Read first 1000 rows just to determine col_types and col_names
-  df <- readr::read_csv(csv_file, n_max=100,col_types = col_types,na=na)
-  if (nrow(readr::problems(df)) > 0) print(readr::problems(df))
-
-  # Convert column classes to character string for read_csv()
-  # i.e. character, integer, integer => "cii"
-  # This is done to ensure that read_csv doesn't try to re-determine
-  # the column types for every chunk.
-  col_names  <- colnames(df)
-  if (is.null(col_types)) {
-    type_trans <- c(character='c', numeric='d', integer='i', logical='l', Date='c')
-    col_types  <- type_trans[sapply(df, FUN=class)]
-    col_types  <- paste0(col_types, collapse="")
-    cat("col_types:", col_types, "\n")
-  }
-
-  if (!is.null(transform)) df <- df %>% transform
-  df <- as.data.frame(df)
-
-  # Connect to database.
+csv2sqlite <- function(csv_file, sqlite_file, table_name, transform=NULL,chunk_size=10000000, append=FALSE,col_types=NULL,na=c(NA,"..","","...","F")) {
+   # Connect to database.
   if (!append) file.remove(sqlite_file)
   con <- DBI::dbConnect(RSQLite::SQLite(), dbname=sqlite_file)
 
-  # Read the data from the beginning of the CSV
-  # Remember to skip the header
-  chunk    <- 0
-  rowsread <- 0
-  while(TRUE) {
-    cat("Chunk:", chunk, "\n")
-    # skip = iter*chunk_size + 1.  the "+1" is because we can now skip the header
-    # The "%>% as.data.frame" is because dbWriteTable is a bit fussy on data structure
-    df <- readr::read_csv(csv_file, col_names, col_types, skip=chunk*chunk_size+1, n_max=chunk_size)
+  chunk_handler <- function(df, pos) {
     if (nrow(readr::problems(df)) > 0) print(readr::problems(df))
     if (!is.null(transform)) df <- df %>% transform
-    df <- as.data.frame(df)
-
-    if (nrow(df) == 0) {
-      cat("Out of rows...\n")
-      break
-    }
-    if ((nrow(df) == 1) & (sum(!(is.na(df))) == 0)) {
-      # this is a workaround for a bug in readr::read_csv when col_types is specified
-      # and skip > #rows in file.  readr incorrectly returns a data.frame with a single row
-      # of all NA values.
-      cat("Out of rows (bugged)...\n")
-      break
-    }
-    rowsread <- rowsread + nrow(df)
-    cat("Rows read:", nrow(df), "  total so far:", rowsread, "\n")
-    DBI::dbWriteTable(con, table_name, df, append=TRUE)
-    chunk <- chunk + 1
+    DBI::dbWriteTable(con, table_name, as.data.frame(df), append=TRUE)
   }
-  cat("Total Read:", rowsread, "\n")
+
+  readr::read_csv_chunked(csv_file,
+                          callback=readr::DataFrameCallback$new(chunk_handler),
+                          col_types=col_types,
+                          chunk_size = chunk_size,
+                          na=na)
 
   DBI::dbDisconnect(con)
 }
+
+
 
 #' remove notes
 #' @export
@@ -97,7 +61,7 @@ standard_xtab_transform <- function(data,remove_member_id=TRUE){
 }
 
 #' transforms standard StatCan xtab to long form
-#' @param data data from get_sqlite_xtab afer calling collect()
+#' @param data data from get_sqlite_xtab after calling collect()
 #' @export
 tidy_xtab <- function(data,remove_member_id=FALSE){
   if (!tibble::is_tibble(data)) stop("This function only works on tibbles. Please call `collect()` first.")
@@ -247,7 +211,7 @@ index_xtab_fields <- function(sqlite_path,table_name,index_fields=NULL){
 #'
 #' @usage  get_sqlite_xtab("98-400-X2016288","https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/dt-td/CompDataDownload.cfm?LANG=E&PID=111849&OFT=CSV")
 get_sqlite_xtab <- function(code,
-                            url,
+                            url=NA,
                             cache_dir=getOption("statcanXtab.cache_dir"),
                             transform=standard_xtab_transform,
                             refresh=FALSE,
@@ -258,18 +222,33 @@ get_sqlite_xtab <- function(code,
   if (refresh || !file.exists(sqlite_path)) {
     if (!is.na(existing_unzip_path)) {
       message("Locating xtab ...")
-      zipped_info <- dir(existing_unzip_path)
-      data_file=zipped_info$Name[grepl("_data\\.csv$",zipped_info$Name)]
-      if (length(data_file)==0) {
-        stop(paste0("No xtabs found in ",existing_unzip_path,"."))
-      } else if (length(data_file)>1) {
-        stop(paste0("Found ",length(data_file)," xtab files in ",existing_unzip_path,".\n",
-                    "Don't know which file to choose: ",paste0(data_file,collapse=", "),".\n",
-                    "Please use a separate directory for each xtab."))
+      if (dir.exists(existing_unzip_path)) {
+        zipped_info <- dir(existing_unzip_path)
+        data_file=zipped_info[grepl("_data\\.csv$",zipped_info)]
+        meta_file=zipped_info[grepl("_meta\\.txt$",zipped_info)& !grepl("README",zipped_info)]
+        if (length(data_file)==0) {
+          stop(paste0("No xtabs found in ",existing_unzip_path,"."))
+        } else if (length(data_file)>1) {
+          stop(paste0("Found ",length(data_file)," xtab files in ",existing_unzip_path,".\n",
+                      "Don't know which file to choose: ",paste0(data_file,collapse=", "),".\n",
+                      "Please use a separate directory for each xtab."))
+        }
+        data_file <- file.path(existing_unzip_path,data_file)
+        meta_file <- file.path(existing_unzip_path,meta_file)
+        zipped_info=NULL
+      } else {
+        if (file.exists(existing_unzip_path)) {
+          data_file=existing_unzip_path
+          meta_file=NULL
+          zipped_info=NULL
+        }
       }
     } else {
+      if (is.na(url)) stop("Need either url or existing_unzip_path set!")
       exdir=tempdir()
-      zipped_info <- get_tmp_zip_archive(url,exdir)
+      zipped_info <- get_tmp_zip_archive(url,exdir)$Name
+      data_file=file.path(exdir,zipped_info[grepl("_data\\.csv$",zipped_info)])
+      meta_file=file.path(exdir,zipped_info[grepl("_meta\\.txt$",zipped_info)& !grepl("README",zipped_info)])
     }
     message("Importing xtab ...")
     table_name="xtab_data"
@@ -280,8 +259,9 @@ get_sqlite_xtab <- function(code,
         rlang::set_names(data,n)
         data
       }
-      structure_path=file.path(exdir,zipped_info$Name[grepl("Structure_.*\\.xml$",zipped_info$Name)])
-      generic_path=file.path(exdir,zipped_info$Name[grepl("Generic_.*\\.xml$",zipped_info$Name)])
+      exdir=tempdir()
+      structure_path=file.path(exdir,zipped_info[grepl("Structure_.*\\.xml$",zipped_info)])
+      generic_path=file.path(exdir,zipped_info[grepl("Generic_.*\\.xml$",zipped_info)])
       df <- parse_xml_xtab(structure_path,generic_path) %>%
         clean_xml_names %>%
         transform
@@ -290,31 +270,29 @@ get_sqlite_xtab <- function(code,
       DBI::dbDisconnect(con)
       index_fields <- setdiff(names(df),"Value")
     } else if (format =='csv') {
-      data_file=zipped_info$Name[grepl("_data\\.csv$",zipped_info$Name)]
       if (length(data_file)!=1) stop(paste0("Could not find unique file to extract: ",paste0(data_file,collapse = ", ")))
-      meta_file=zipped_info$Name[grepl("_meta\\.txt$",zipped_info$Name)& !grepl("README",zipped_info$Name)]
-      meta_lines <- read_lines(file.path(exdir,meta_file))
-      meta_path <- file.path(cache_dir,paste0(code,"_meta.txt"))
-      write_lines(meta_lines,meta_path)
-
+      if (!is.null(meta_file)) {
+        meta_lines <- readr::read_lines(meta_file)
+        meta_path <- file.path(cache_dir,paste0(code,"_meta.txt"))
+        readr::write_lines(meta_lines,meta_path)
+      }
       csv2sqlite(
-        csv_file=file.path(exdir,data_file),
+        csv_file=file.path(data_file),
         sqlite_file=sqlite_path,
         table_name=table_name,
         col_types = readr::cols(.default = "c"),
         transform = transform)
-      index_fields = readr::read_csv(file.path(exdir,data_file),n_max=1,col_types=readr::cols(.default = "c")) %>%
-        dplyr::select(names(.)[grepl("^DIM: |GEO_CODE \\(POR\\)|ALT_GEO_CODE|CENSUS_YEAR|GeoUID|GEO_NAME",names(.))]) %>%
+      index_fields = readr::read_csv(file.path(data_file),n_max=1,col_types=readr::cols(.default = "c")) %>%
         transform %>%
+        dplyr::select(names(.)[grepl("^DIM: |GEO_CODE \\(POR\\)|ALT_GEO_CODE|CENSUS_YEAR|GeoUID|GEO_NAME",names(.))]) %>%
         names
     } else {
       stop(paste0("Don't know how to import format ",format,"."))
     }
-    zipped_info$Name %>% file.path(exdir,.) %>% lapply(unlink)
-
+    if (!is.null(zipped_info)) zipped_info %>% file.path(exdir,.) %>% lapply(unlink)
     index_xtab_fields(sqlite_path,table_name,index_fields)
   } else {
-    message("Reading xtab from cache...")
+    message("Opening local sqlite xtab...")
   }
   DBI::dbConnect(RSQLite::SQLite(), sqlite_path) %>%
     tbl("xtab_data")
@@ -623,6 +601,17 @@ gather_for_grep_string <- function(data,gather_key,grep_string){
 strip_columns_for_grep_string <- function(data,grep_string){
   data %>% dplyr::select(names(data)[!grepl(grep_string,names(data))])
 }
+
+spark_import <- function(path){
+  sc <- sparklyr::spark_connect(master = "local")
+  data_raw_spk <- sparklyr::spark_read_csv(
+    path = path,
+    sc = sc,
+    name = "data_export_raw",
+    overwrite = TRUE
+  )
+}
+
 
 
 #' @import xml2

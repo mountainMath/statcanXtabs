@@ -7,7 +7,7 @@
 tidy_xtab(data, remove_member_id = FALSE)
 }
 \arguments{
-\item{data}{data from get_sqlite_xtab afer calling collect()}
+\item{data}{data from get_sqlite_xtab after calling collect()}
 }
 \description{
 transforms standard StatCan xtab to long form
