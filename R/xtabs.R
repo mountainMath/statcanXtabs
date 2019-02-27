@@ -205,9 +205,9 @@ index_xtab_fields <- function(sqlite_path,table_name,index_fields=NULL){
 #' close_sqlite_xtab
 #'
 #' @param xtab connection to the xtab as retured from get_sqlite_xtab
-#' @exxport
+#' @export
 close_sqlite_xtab <- function(xtab){
-  DBI::dbDisconnect(xtab)
+  DBI::dbDisconnect(xtab$src$con)
 }
 
 #' get_sqlite_xtab
@@ -305,7 +305,7 @@ get_sqlite_xtab <- function(code,
     message("Opening local sqlite xtab...")
   }
   DBI::dbConnect(RSQLite::SQLite(), sqlite_path) %>%
-    tbl("xtab_data")
+    dplyr::tbl("xtab_data")
 }
 
 xtab_download_url_for <- function(code) {

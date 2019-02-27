@@ -6,7 +6,7 @@
 adapted from https://rdrr.io/github/coolbutuseless/csv2sqlite/src/R/csv2sqlite.R}
 \usage{
 csv2sqlite(csv_file, sqlite_file, table_name, transform = NULL,
-  chunk_size = 1e+07, append = FALSE, col_types = NULL, na = c(NA,
+  chunk_size = 5e+06, append = FALSE, col_types = NULL, na = c(NA,
   "..", "", "...", "F"))
 }
 \arguments{
