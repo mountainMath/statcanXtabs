@@ -10,10 +10,11 @@
 #'
 csv2sqlite <- function(csv_file, sqlite_file, table_name, transform=NULL,chunk_size=10000000, append=FALSE,col_types=NULL,na=c(NA,"..","","...","F")) {
    # Connect to database.
-  if (!append) file.remove(sqlite_file)
+  if (!append && file.exists(sqlite_file)) file.remove(sqlite_file)
   con <- DBI::dbConnect(RSQLite::SQLite(), dbname=sqlite_file)
 
   chunk_handler <- function(df, pos) {
+    print(names(df))
     if (nrow(readr::problems(df)) > 0) print(readr::problems(df))
     if (!is.null(transform)) df <- df %>% transform
     DBI::dbWriteTable(con, table_name, as.data.frame(df), append=TRUE)
@@ -87,15 +88,17 @@ get_tmp_zip_archive <- function(url,exdir=tempdir()){
   temp=tempfile(fileext = ".zip")
   download.file(url,temp)
   message("Unpacking data ...")
-  unzip_type=ifelse(is.null(getOption("unzip")),"internal",getOption("unzip"))
-  zipped_info <- utils::unzip(temp, list=TRUE,unzip=unzip_type)
-  large <- sum(zipped_info$Length) > 4000000000
-  if (large && unzip_type=="internal")
-    message(paste0("File might be too large for R internal unzip.\n",
-                   "If unzip fails, consider setting the 'R_UNZIPCMD' environment vairable or\n",
-                   "downlod and unzip the file manually and use the 'existing_unzip_path' parameter.\n",
-                   "Downloaded archive is at ",temp))
-  utils::unzip(temp,exdir=exdir,unzip=unzip_type)
+  zipped_info <- zip::zip_list(temp) %>% mutate(Name=filename,Length=uncompressed_size)
+  # unzip_type=ifelse(is.null(getOption("unzip")),"internal",getOption("unzip"))
+  # zipped_info <- utils::unzip(temp, list=TRUE,unzip=unzip_type)
+  # large <- sum(zipped_info$Length) > 4000000000
+  # if (large && unzip_type=="internal")
+  #   message(paste0("File might be too large for R internal unzip.\n",
+  #                  "If unzip fails, consider setting the 'R_UNZIPCMD' environment vairable or\n",
+  #                  "downlod and unzip the file manually and use the 'existing_unzip_path' parameter.\n",
+  #                  "Downloaded archive is at ",temp))
+  #utils::unzip(temp,exdir=exdir,unzip=unzip_type)
+  zip::unzip(temp,exdir=exdir)
   unlink(temp)
   zipped_info
 }
@@ -290,6 +293,7 @@ get_sqlite_xtab <- function(code,
       stop(paste0("Don't know how to import format ",format,"."))
     }
     if (!is.null(zipped_info)) zipped_info %>% file.path(exdir,.) %>% lapply(unlink)
+    print("Indexing xtab...")
     index_xtab_fields(sqlite_path,table_name,index_fields)
   } else {
     message("Opening local sqlite xtab...")
