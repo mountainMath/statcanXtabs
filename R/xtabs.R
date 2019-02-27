@@ -8,13 +8,12 @@
 #' @param chunk_size optional chunk size to read/write data, default=1,000,000
 #' @param append optional parameter, append to database or overwrite, defaul=`FALSE`
 #'
-csv2sqlite <- function(csv_file, sqlite_file, table_name, transform=NULL,chunk_size=10000000, append=FALSE,col_types=NULL,na=c(NA,"..","","...","F")) {
+csv2sqlite <- function(csv_file, sqlite_file, table_name, transform=NULL,chunk_size=5000000, append=FALSE,col_types=NULL,na=c(NA,"..","","...","F")) {
    # Connect to database.
   if (!append && file.exists(sqlite_file)) file.remove(sqlite_file)
   con <- DBI::dbConnect(RSQLite::SQLite(), dbname=sqlite_file)
 
   chunk_handler <- function(df, pos) {
-    print(names(df))
     if (nrow(readr::problems(df)) > 0) print(readr::problems(df))
     if (!is.null(transform)) df <- df %>% transform
     DBI::dbWriteTable(con, table_name, as.data.frame(df), append=TRUE)
@@ -203,6 +202,13 @@ index_xtab_fields <- function(sqlite_path,table_name,index_fields=NULL){
   DBI::dbDisconnect(con)
 }
 
+#' close_sqlite_xtab
+#'
+#' @param xtab connection to the xtab as retured from get_sqlite_xtab
+#' @exxport
+close_sqlite_xtab <- function(xtab){
+  DBI::dbDisconnect(xtab)
+}
 
 #' get_sqlite_xtab
 #'
