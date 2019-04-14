@@ -603,8 +603,11 @@ xml_via_python <- function(code,url,python_path="/anaconda3/bin/python3",refresh
 gather_for_grep_string <- function(data,gather_key,grep_string){
   vars <- names(data)[grepl(grep_string,names(data))]
   short_vars <- gsub(grep_string,"",vars)
-  names(data) <- gsub(grep_string,"",names(data))
-  data %>% tidyr::gather(key=!!gather_key,value="Value",short_vars)
+  short_vars[duplicated(short_vars)]=tibble(v=short_vars[duplicated(short_vars)]) %>% mutate(n=paste0(v," (",row_number(),")")) %>% pull(n)
+  #names(data) <- gsub(grep_string,"",names(data))
+  data %>%
+    rename(!!!set_names(vars,short_vars)) %>%
+    tidyr::gather(key=!!gather_key,value="Value",short_vars)
 }
 
 #' @export
