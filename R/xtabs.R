@@ -497,7 +497,7 @@ xml_census_2001_profile <- function(code,url,refresh=FALSE,time_value=NA,temp=NA
     #l <- lapply(concepts,function(c){series %>% xml_find_all(paste0(".//generic:Value[@concept='",c,"']")) %>% xml_attr("value")})
 
     time_data <- function(series){
-      if (time_value) {
+      if (!is.na(time_value)) {
         result=rep(time_value,length(series))
       } else {
         message("Extracting year data")
@@ -572,7 +572,7 @@ xml_to_csv <- function(code,url,python_path="/anaconda3/bin/python3",refresh=FAL
     reticulate::use_python(python_path)
     reticulate::conda_binary(conda = python_path)
     reticulate::use_condaenv("r-reticulate")
-    statcan = reticulate::import_from_path("statcan",file.path(system.file(package="cancensusHelpers")))
+    statcan = reticulate::import_from_path("statcan",file.path(system.file(package="statcanXtabs")))
     statcan$convert_statcan_xml_to_csv(temp,path)
     if (remove_temp) unlink(temp)
     message("Done converting xml to csv")
