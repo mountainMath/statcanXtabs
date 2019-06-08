@@ -29,6 +29,22 @@ csv2sqlite <- function(csv_file, sqlite_file, table_name, transform=NULL,chunk_s
 }
 
 
+#' convert tibble or data frame to sqlite
+#'
+#' @param data input tibble or data frame
+#' @param sqlite_file output sql database path
+#' @param table_name sql table name
+#' @param append optional parameter, append to database or overwrite, defaul=`FALSE`
+#'
+data2sqlite <- function(data, sqlite_file, table_name, append=FALSE) {
+  if (!append && file.exists(sqlite_file)) file.remove(sqlite_file)
+  con <- DBI::dbConnect(RSQLite::SQLite(), dbname=sqlite_file)
+  DBI::dbWriteTable(con, table_name, as.data.frame(data), append=TRUE)
+  DBI::dbDisconnect(con)
+}
+
+
+
 
 #' remove notes
 #' @export
@@ -173,6 +189,7 @@ parse_xml_xtab <- function(structure_path,generic_path){
     dplyr::mutate(GeoUID = fix_ct_geo_format(GeoUID),
            Value=as.numeric(Value))
 }
+
 
 create_index <- function(connection,table_name,field){
   field_index=paste0("index_",gsub("[^[:alnum:]]","_",field))
