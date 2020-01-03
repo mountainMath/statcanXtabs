@@ -12,7 +12,8 @@ Depends: dplyr (>= 0.7.2),
   tidyr,
   purrr,
   xml2,
-  zip
+  zip,
+  RSQLite
 RoxygenNote: 6.1.1
 Suggests: knitr,
     rmarkdown,

@@ -4,8 +4,9 @@
 \alias{xml_to_csv}
 \title{Use python to parse xml}
 \usage{
-xml_to_csv(code, url, python_path = "/anaconda3/bin/python3",
-  refresh = FALSE, time_value = NA, temp = NA)
+xml_to_csv(code, url, python_path = "/opt/anaconda3/bin/python3.7",
+  refresh = FALSE, time_value = NA, temp = NA,
+  conda = "/opt/anaconda3/bin/conda")
 }
 \description{
 Use python to parse xml

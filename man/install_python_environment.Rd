@@ -4,7 +4,8 @@
 \alias{install_python_environment}
 \title{Set up virtual conda env}
 \usage{
-install_python_environment(python_path = "/anaconda3/bin/python3")
+install_python_environment(python_path = "/opt/anaconda3/bin/python3.7",
+  conda = "/opt/anaconda3/bin/conda")
 }
 \description{
 Set up virtual conda env

@@ -7,7 +7,7 @@ adapted from https://rdrr.io/github/coolbutuseless/csv2sqlite/src/R/csv2sqlite.R
 \usage{
 csv2sqlite(csv_file, sqlite_file, table_name, transform = NULL,
   chunk_size = 5e+06, append = FALSE, col_types = NULL, na = c(NA,
-  "..", "", "...", "F"))
+  "..", "", "...", "F"), text_encoding = "UTF8")
 }
 \arguments{
 \item{csv_file}{input csv path}
@@ -21,6 +21,12 @@ csv2sqlite(csv_file, sqlite_file, table_name, transform = NULL,
 \item{chunk_size}{optional chunk size to read/write data, default=1,000,000}
 
 \item{append}{optional parameter, append to database or overwrite, defaul=`FALSE`}
+
+\item{col_types}{optional parameter for csv column types}
+
+\item{na}{na character strings}
+
+\item{text_encoding}{encoding of csv file (default UTF8)}
 }
 \description{
 convert csv to sqlite

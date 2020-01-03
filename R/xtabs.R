@@ -7,8 +7,13 @@
 #' @param transform optional function that transforms each chunk
 #' @param chunk_size optional chunk size to read/write data, default=1,000,000
 #' @param append optional parameter, append to database or overwrite, defaul=`FALSE`
-#'
-csv2sqlite <- function(csv_file, sqlite_file, table_name, transform=NULL,chunk_size=5000000, append=FALSE,col_types=NULL,na=c(NA,"..","","...","F")) {
+#' @param col_types optional parameter for csv column types
+#' @param na na character strings
+#' @param text_encoding encoding of csv file (default UTF8)
+#' @export
+csv2sqlite <- function(csv_file, sqlite_file, table_name, transform=NULL,chunk_size=5000000,
+                       append=FALSE,col_types=NULL,na=c(NA,"..","","...","F"),
+                       text_encoding="UTF8") {
    # Connect to database.
   if (!append && file.exists(sqlite_file)) file.remove(sqlite_file)
   con <- DBI::dbConnect(RSQLite::SQLite(), dbname=sqlite_file)
@@ -23,6 +28,7 @@ csv2sqlite <- function(csv_file, sqlite_file, table_name, transform=NULL,chunk_s
                           callback=readr::DataFrameCallback$new(chunk_handler),
                           col_types=col_types,
                           chunk_size = chunk_size,
+                          locale=readr::locale(encoding = text_encoding),
                           na=na)
 
   DBI::dbDisconnect(con)
@@ -36,6 +42,7 @@ csv2sqlite <- function(csv_file, sqlite_file, table_name, transform=NULL,chunk_s
 #' @param table_name sql table name
 #' @param append optional parameter, append to database or overwrite, defaul=`FALSE`
 #'
+#' @export
 data2sqlite <- function(data, sqlite_file, table_name, append=FALSE) {
   if (!append && file.exists(sqlite_file)) file.remove(sqlite_file)
   con <- DBI::dbConnect(RSQLite::SQLite(), dbname=sqlite_file)
@@ -272,9 +279,11 @@ get_sqlite_xtab <- function(code,
     } else {
       if (is.na(url)) stop("Need either url or existing_unzip_path set!")
       exdir=tempdir()
-      zipped_info <- get_tmp_zip_archive(url,exdir)$Name
-      data_file=file.path(exdir,zipped_info[grepl("_data\\.csv$",zipped_info)])
-      meta_file=file.path(exdir,zipped_info[grepl("_meta\\.txt$",zipped_info)& !grepl("README",zipped_info)])
+      if (format != "python_xml") {
+        zipped_info <- get_tmp_zip_archive(url,exdir)$Name
+        data_file=file.path(exdir,zipped_info[grepl("_data\\.csv$",zipped_info)])
+        meta_file=file.path(exdir,zipped_info[grepl("_meta\\.txt$",zipped_info)& !grepl("README",zipped_info)])
+      }
     }
     message("Importing xtab ...")
     table_name="xtab_data"
@@ -312,6 +321,12 @@ get_sqlite_xtab <- function(code,
         transform %>%
         dplyr::select(names(.)[grepl("^DIM: |GEO_CODE \\(POR\\)|ALT_GEO_CODE|CENSUS_YEAR|GeoUID|GEO_NAME",names(.))]) %>%
         names
+    } else if (format=="python_xml") {
+      csv_path<-statcanXtabs::xml_to_csv(code,url,refresh = refresh)
+      csv2sqlite(csv_path,sqlite_path,table_name,col_types = readr::cols(.default = "c"))
+      index_fields <- read_csv(csv_path,n_max = 1) %>% select(-matches(" ID$|^Value$")) %>% names()
+      index_xtab_fields(sqlite_path,table_name,index_fields)
+      file.remove(csv_path)
     } else {
       stop(paste0("Don't know how to import format ",format,"."))
     }
@@ -566,29 +581,31 @@ xml_census_2001_profile <- function(code,url,refresh=FALSE,time_value=NA,temp=NA
 
 #' Set up virtual conda env
 #' @export
-install_python_environment <- function(python_path="/anaconda3/bin/python3"){
+install_python_environment <- function(python_path="/opt/anaconda3/bin/python3.7",conda="/opt/anaconda3/bin/conda"){
   reticulate::use_python(python_path)
-  reticulate::conda_binary(conda = python_path)
-  reticulate::conda_remove("r-reticulate")
-  reticulate::conda_create("r-reticulate",packages="lxml")
+  #reticulate::conda_binary(conda = python_path)
+  #reticulate::conda_remove("r-reticulate")
+  reticulate::use_condaenv("r-reticulate",conda=conda)
+  reticulate::conda_create("r-reticulate",packages="lxml",conda=conda)
 }
 
 #' Use python to parse xml
 #' @export
-xml_to_csv <- function(code,url,python_path="/anaconda3/bin/python3",refresh=FALSE,time_value=NA,temp=NA){
+xml_to_csv <- function(code,url,python_path="/opt/anaconda3/bin/python3.7",refresh=FALSE,time_value=NA,temp=NA,
+                       conda="/opt/anaconda3/bin/conda"){
   path <- file.path(getOption("custom_data_path"),paste0(code,".csv"))
   if (refresh | !file.exists(path)) {
     remove_temp=FALSE
     if (is.na(temp)) {
       message("Downloading file")
       remove_temp=TRUE
-      temp <- tempfile()
+      temp <- tempfile(".zip")
       download.file(url,temp)
     }
     message("Converting xml to csv")
     reticulate::use_python(python_path)
     reticulate::conda_binary(conda = python_path)
-    reticulate::use_condaenv("r-reticulate")
+    reticulate::use_condaenv("r-reticulate",conda=conda)
     statcan = reticulate::import_from_path("statcan",file.path(system.file(package="statcanXtabs")))
     statcan$convert_statcan_xml_to_csv(temp,path)
     if (remove_temp) unlink(temp)
@@ -611,8 +628,8 @@ xml_to_csv <- function(code,url,python_path="/anaconda3/bin/python3",refresh=FAL
 #' downloaded again.
 #'
 #' @export
-xml_via_python <- function(code,url,python_path="/anaconda3/bin/python3",refresh=FALSE,temp=NA){
-  readr::read_csv(xml_to_csv(code,url,python_path=python_path,refresh=refresh,temp=temp))
+xml_via_python <- function(code,url,python_path="/opt/anaconda3/bin/python3.7",conda="/opt/anaconda3/bin/conda",refresh=FALSE,temp=NA){
+  readr::read_csv(xml_to_csv(code,url,python_path=python_path,conda=conda,refresh=refresh,temp=temp))
 }
 
 
