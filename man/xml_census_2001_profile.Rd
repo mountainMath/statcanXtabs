@@ -5,8 +5,7 @@
 \title{Download xml xtab data from url, tag with code for caching
 useful for (2001) census profile data}
 \usage{
-xml_census_2001_profile(code, url, refresh = FALSE, time_value = NA,
-  temp = NA)
+xml_census_2001_profile(code, url, refresh = FALSE, time_value = NA, temp = NA)
 }
 \description{
 Download xml xtab data from url, tag with code for caching

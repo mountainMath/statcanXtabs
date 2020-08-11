@@ -239,7 +239,10 @@ close_sqlite_xtab <- function(xtab){
 #' @param code Code for the xtab, used for local caching
 #' @param url url to download the csv version of the xtab
 #' @param cache_dir optional cache directory.
+#' @param refresh redownload and parse data, default \code(FALSE)
 #' @param existing_unzip_path optional path to unzipped xtab, useful for large (>4GB unzipped) xtabs on windows machines
+#' @param format data format of xtab, defaults to "csv". Other valid options are "xml" and "python_xml". Set according
+#' to the format of the data, and if conversion through xml should be done via python for better performance
 #' @export
 #'
 #' @usage  get_sqlite_xtab("98-400-X2016288","https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/dt-td/CompDataDownload.cfm?LANG=E&PID=111849&OFT=CSV")
@@ -450,7 +453,7 @@ xml_xtab_for <- function(code,url,refresh=FALSE,time_value=NA,temp=NA,system_unz
     df=concepts %>%
       purrr::map(function(c){code_data(series,c)}) %>%
       rlang::set_names(concept_names) %>%
-      tibble::as.tibble() %>%
+      tibble::as_tibble() %>%
       dplyr::bind_cols(tibble::tibble(Year = time_data(series), Value = value_data(series)))
 
     for (i in seq(1,length(concepts),1)) {
@@ -549,7 +552,7 @@ xml_census_2001_profile <- function(code,url,refresh=FALSE,time_value=NA,temp=NA
     df=concepts %>%
       purrr::map(function(c){code_data(series,c)}) %>%
       rlang::set_names(concept_names) %>%
-      tibble::as.tibble()  %>%
+      tibble::as_tibble()  %>%
       dplyr::bind_cols(tibble::tibble(Year = time_data(series), Value = value_data(series)))
 
     for (i in seq(1,length(concepts),1)) {
@@ -629,7 +632,8 @@ xml_to_csv <- function(code,url,python_path="/opt/anaconda3/bin/python3.7",refre
 #'
 #' @export
 xml_via_python <- function(code,url,python_path="/opt/anaconda3/bin/python3.7",conda="/opt/anaconda3/bin/conda",refresh=FALSE,temp=NA){
-  readr::read_csv(xml_to_csv(code,url,python_path=python_path,conda=conda,refresh=refresh,temp=temp))
+  readr::read_csv(xml_to_csv(code,url,python_path=python_path,conda=conda,refresh=refresh,temp=temp),
+                  col_types = readr::cols(.default="c"))
 }
 
 

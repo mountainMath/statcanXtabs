@@ -31,9 +31,11 @@ def convert_statcan_xml_to_csv(infile, outfile):
     concepts = list(
         set(map(lambda x: list(x.keys())[0], all_concepts)) - set(["GEO", "OBS_VALUE", "OBS_STATUS", "TIME"]))
 
+    print("Extracting concepts: " + ', '.join(map(str, concepts)), flush=True)
+
     def get_description(elem):
         value = elem.attrib['value']
-        desc = elem.find("{http://www.SDMX.org/resources/SDMXML/schemas/v2_0/structure}Description").text.encode("utf8")
+        desc = elem.find("{http://www.SDMX.org/resources/SDMXML/schemas/v2_0/structure}Description").text
         return ([value, desc])
 
     def get_description_for_key(c):
@@ -90,9 +92,10 @@ def convert_statcan_xml_to_csv(infile, outfile):
             count += 1
             elem.clear()
             if count % 100000 == 0:
-                print("Done with row " + str(count / 1000) + "k")
+                print("Done with row " + str(count / 1000) + "k", flush=True)
                 csvfile.flush()
-
+        csvfile.flush()
+        
     import shutil
     shutil.rmtree(data_dir, ignore_errors=True)
 

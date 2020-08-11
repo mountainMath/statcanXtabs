@@ -13,7 +13,12 @@ get_sqlite_xtab("98-400-X2016288","https://www12.statcan.gc.ca/census-recensemen
 
 \item{cache_dir}{optional cache directory.}
 
+\item{refresh}{redownload and parse data, default \code(FALSE)}
+
 \item{existing_unzip_path}{optional path to unzipped xtab, useful for large (>4GB unzipped) xtabs on windows machines}
+
+\item{format}{data format of xtab, defaults to "csv". Other valid options are "xml" and "python_xml". Set according
+to the format of the data, and if conversion through xml should be done via python for better performance}
 }
 \description{
 get_sqlite_xtab

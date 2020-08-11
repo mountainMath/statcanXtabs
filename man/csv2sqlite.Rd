@@ -5,9 +5,17 @@
 \title{convert csv to sqlite
 adapted from https://rdrr.io/github/coolbutuseless/csv2sqlite/src/R/csv2sqlite.R}
 \usage{
-csv2sqlite(csv_file, sqlite_file, table_name, transform = NULL,
-  chunk_size = 5e+06, append = FALSE, col_types = NULL, na = c(NA,
-  "..", "", "...", "F"), text_encoding = "UTF8")
+csv2sqlite(
+  csv_file,
+  sqlite_file,
+  table_name,
+  transform = NULL,
+  chunk_size = 5e+06,
+  append = FALSE,
+  col_types = NULL,
+  na = c(NA, "..", "", "...", "F"),
+  text_encoding = "UTF8"
+)
 }
 \arguments{
 \item{csv_file}{input csv path}

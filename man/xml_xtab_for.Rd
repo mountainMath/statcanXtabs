@@ -5,8 +5,14 @@
 \title{Download xml xtab data from url, tag with code for caching
 useful for older (2006) data that does not come as csv option}
 \usage{
-xml_xtab_for(code, url, refresh = FALSE, time_value = NA, temp = NA,
-  system_unzip = FALSE)
+xml_xtab_for(
+  code,
+  url,
+  refresh = FALSE,
+  time_value = NA,
+  temp = NA,
+  system_unzip = FALSE
+)
 }
 \arguments{
 \item{code}{The statcan table code, needed for caching and for locating the table to extract}

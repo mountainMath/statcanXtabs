@@ -14,7 +14,7 @@ Depends: dplyr (>= 0.7.2),
   xml2,
   zip,
   RSQLite
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.0.9000
 Suggests: knitr,
     rmarkdown,
     tidyverse

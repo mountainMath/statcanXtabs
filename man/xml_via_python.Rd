@@ -5,8 +5,14 @@
 \title{Download xml xtab data from url, tag with code for caching
 useful for older (2006) data that does not come as csv option}
 \usage{
-xml_via_python(code, url, python_path = "/anaconda3/bin/python3",
-  refresh = FALSE, temp = NA)
+xml_via_python(
+  code,
+  url,
+  python_path = "/opt/anaconda3/bin/python3.7",
+  conda = "/opt/anaconda3/bin/conda",
+  refresh = FALSE,
+  temp = NA
+)
 }
 \arguments{
 \item{code}{The statcan table code, needed for caching and for locating the table to extract}
