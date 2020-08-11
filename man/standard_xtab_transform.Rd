@@ -6,6 +6,11 @@
 \usage{
 standard_xtab_transform(data, remove_member_id = TRUE)
 }
+\arguments{
+\item{data}{input data frame}
+
+\item{remove_member_id}{optionally remove member id columns, default \code{TRUE}.}
+}
 \description{
 transform function for get_sqlite_xtab cleaning names
 }

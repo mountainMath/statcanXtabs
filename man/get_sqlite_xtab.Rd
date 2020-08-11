@@ -4,16 +4,27 @@
 \alias{get_sqlite_xtab}
 \title{get_sqlite_xtab}
 \usage{
-get_sqlite_xtab("98-400-X2016288","https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/dt-td/CompDataDownload.cfm?LANG=E&PID=111849&OFT=CSV")
+get_sqlite_xtab(
+  code,
+  url = NA,
+  cache_dir = getOption("statcanXtab.cache_dir"),
+  transform = standard_xtab_transform,
+  refresh = FALSE,
+  existing_unzip_path = NA,
+  format = "csv"
+)
 }
 \arguments{
 \item{code}{Code for the xtab, used for local caching}
 
 \item{url}{url to download the csv version of the xtab}
 
-\item{cache_dir}{optional cache directory.}
+\item{cache_dir}{optional cache directory, default is \code{getOption("statcanXtab.cache_dir")}.}
 
-\item{refresh}{redownload and parse data, default \code(FALSE)}
+\item{transform}{transform to apply to data, default is \code{standard_xtab_transform} which removes the notes
+column, cleans up the variable names and casts the \code{Value} column to numeric.}
+
+\item{refresh}{redownload and parse data, default \code{FALSE}}
 
 \item{existing_unzip_path}{optional path to unzipped xtab, useful for large (>4GB unzipped) xtabs on windows machines}
 

@@ -54,20 +54,26 @@ data2sqlite <- function(data, sqlite_file, table_name, append=FALSE) {
 
 
 #' remove notes
+#'
+#' @param data input data frame
 #' @export
 remove_xtab_notes_transform <- function(data){
-  data %>% dplyr::select(names(.)[!grepl("Notes: ",names(.))])
+  data %>% select(names(.)[!grepl("Notes: ",names(.))])
 }
 
 #' transform function for get_sqlite_xtab cleaning names
+#'
+#' @param data input data frame
 #' @export
 clean_xtab_names_transform <- function(data){
   data %>%
-    rlang::set_names(gsub(" \\(Note: \\d+\\)$","",names(.))) %>%
-    rlang::set_names(gsub("^DIM: | \\(\\d+[A-Z]*\\)$","",names(.)))
+    setNames(gsub(" \\(Note: \\d+\\)$","",names(.))) %>%
+    setNames(gsub("^DIM: | \\(\\d+[A-Z]*\\)$","",names(.)))
 }
 
 #' transform function for get_sqlite_xtab cleaning names
+#'
+#' @param data input data frame
 #' @export
 numeric_xtab_values_transfrom <- function(data) {
   value_columns <- names(data)[grepl("^Dim: ",names(data))]
@@ -75,6 +81,9 @@ numeric_xtab_values_transfrom <- function(data) {
 }
 
 #' transform function for get_sqlite_xtab cleaning names
+#'
+#' @param data input data frame
+#' @param remove_member_id optionally remove member id columns, default \code{TRUE}.
 #' @export
 standard_xtab_transform <- function(data,remove_member_id=TRUE){
   data %>%
@@ -85,6 +94,7 @@ standard_xtab_transform <- function(data,remove_member_id=TRUE){
 
 #' transforms standard StatCan xtab to long form
 #' @param data data from get_sqlite_xtab after calling collect()
+#' @param remove_member_id optionally remove member id columns, default is \code{FALSE}.
 #' @export
 tidy_xtab <- function(data,remove_member_id=FALSE){
   if (!tibble::is_tibble(data)) stop("This function only works on tibbles. Please call `collect()` first.")
@@ -100,17 +110,17 @@ tidy_xtab <- function(data,remove_member_id=FALSE){
     gsub("^.+: Member ID: ","Member ID: ",.)
   if (remove_member_id) clean_value_columns <- gsub("Member ID: \\[\\d+[A-Z]*\\]: ","",clean_value_columns)
   data %>%
-    rename(!!!set_names(value_columns,clean_value_columns)) %>%
-    gather(key=!!gather_name,value="Value",clean_value_columns)
+    rename(!!!setNames(value_columns,clean_value_columns)) %>%
+    tidyr::gather(key=!!gather_name,value="Value",clean_value_columns)
 }
 
 
 get_tmp_zip_archive <- function(url,exdir=tempdir()){
   message("Downloading data ...")
   temp=tempfile(fileext = ".zip")
-  download.file(url,temp)
+  utils::download.file(url,temp)
   message("Unpacking data ...")
-  zipped_info <- zip::zip_list(temp) %>% mutate(Name=filename,Length=uncompressed_size)
+  zipped_info <- zip::zip_list(temp) %>% mutate(Name=.data$filename,Length=.data$uncompressed_size)
   # unzip_type=ifelse(is.null(getOption("unzip")),"internal",getOption("unzip"))
   # zipped_info <- utils::unzip(temp, list=TRUE,unzip=unzip_type)
   # large <- sum(zipped_info$Length) > 4000000000
@@ -139,13 +149,13 @@ parse_xml_xtab <- function(structure_path,generic_path){
     xml_structure %>% xml_find_all(paste0("//structure:ConceptScheme/structure:Concept[@id='",c,"']/structure:Name[@xml:lang='en']")) %>%
       xml_text}) %>% unlist
 
-  concept_lookup <- rlang::set_names(concept_names,concepts)
+  concept_lookup <- setNames(concept_names,concepts)
 
   descriptions_for_code <- function(c){
     c <- gsub("0$","",c)
     base <- xml_structure %>% xml_find_all(paste0("//structure:CodeList[@id='CL_",toupper(c),"']/structure:Code"))
     desc_text = ifelse(length(xml_find_all(base[1] ,".//structure:Description[@xml:lang='en']"))==0,".//structure:Description",".//structure:Description[@xml:lang='en']")
-    rlang::set_names(
+    setNames(
       base %>% purrr::map(function(e){e %>% xml_find_all(desc_text) %>% xml_text}) %>% unlist %>% trimws(),
       base %>% purrr::map(function(e){xml_attr(e,"value")}) %>% unlist
     )
@@ -173,9 +183,9 @@ parse_xml_xtab <- function(structure_path,generic_path){
 
   df=concepts %>%
     purrr::map(function(c){code_data(series,c)}) %>%
-    rlang::set_names(concept_names) %>%
+    setNames(concept_names) %>%
     tibble::as_tibble() %>%
-    dplyr::bind_cols(tibble::tibble(Year = time_data(series), Value = value_data(series)))
+    bind_cols(tibble::tibble(Year = time_data(series), Value = value_data(series)))
 
   for (i in seq(1,length(concepts),1)) {
     c=concepts[i]
@@ -192,9 +202,9 @@ parse_xml_xtab <- function(structure_path,generic_path){
   }
 
   df  %>%
-    dplyr::rename(GeoUID=`Geography ID`) %>%
-    dplyr::mutate(GeoUID = fix_ct_geo_format(GeoUID),
-           Value=as.numeric(Value))
+    rename(GeoUID=.data$`Geography ID`) %>%
+    mutate(GeoUID = fix_ct_geo_format(.data$GeoUID),
+           Value=as.numeric(.data$Value))
 }
 
 
@@ -208,9 +218,10 @@ create_index <- function(connection,table_name,field){
 }
 
 #' create indices on index_fields in the sqlite database in case they don't exist
+#'
 #' @param sqlite_path path to the sqlite database
 #' @param table_name name of the table
-#' @param index_field optional vector of column names to index, defaul indexes all columns
+#' @param index_fields optional vector of column names to index, defaul indexes all columns
 #'
 #' @export
 index_xtab_fields <- function(sqlite_path,table_name,index_fields=NULL){
@@ -238,14 +249,15 @@ close_sqlite_xtab <- function(xtab){
 #'
 #' @param code Code for the xtab, used for local caching
 #' @param url url to download the csv version of the xtab
-#' @param cache_dir optional cache directory.
-#' @param refresh redownload and parse data, default \code(FALSE)
+#' @param cache_dir optional cache directory, default is \code{getOption("statcanXtab.cache_dir")}.
+#' @param transform transform to apply to data, default is \code{standard_xtab_transform} which removes the notes
+#' column, cleans up the variable names and casts the \code{Value} column to numeric.
+#' @param refresh redownload and parse data, default \code{FALSE}
 #' @param existing_unzip_path optional path to unzipped xtab, useful for large (>4GB unzipped) xtabs on windows machines
 #' @param format data format of xtab, defaults to "csv". Other valid options are "xml" and "python_xml". Set according
 #' to the format of the data, and if conversion through xml should be done via python for better performance
 #' @export
 #'
-#' @usage  get_sqlite_xtab("98-400-X2016288","https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/dt-td/CompDataDownload.cfm?LANG=E&PID=111849&OFT=CSV")
 get_sqlite_xtab <- function(code,
                             url=NA,
                             cache_dir=getOption("statcanXtab.cache_dir"),
@@ -294,7 +306,7 @@ get_sqlite_xtab <- function(code,
       clean_xml_names <- function(data){
         n <- names(data)
         n[grepl(" ID$",n)]=paste0("Member ID: ",gsub(" ID$","",n[grepl(" ID$",n)]))
-        rlang::set_names(data,n)
+        setNames(data,n)
         data
       }
       exdir=tempdir()
@@ -322,12 +334,12 @@ get_sqlite_xtab <- function(code,
         transform = transform)
       index_fields = readr::read_csv(file.path(data_file),n_max=1,col_types=readr::cols(.default = "c")) %>%
         transform %>%
-        dplyr::select(names(.)[grepl("^DIM: |GEO_CODE \\(POR\\)|ALT_GEO_CODE|CENSUS_YEAR|GeoUID|GEO_NAME",names(.))]) %>%
+        select(names(.)[grepl("^DIM: |GEO_CODE \\(POR\\)|ALT_GEO_CODE|CENSUS_YEAR|GeoUID|GEO_NAME",names(.))]) %>%
         names
     } else if (format=="python_xml") {
       csv_path<-statcanXtabs::xml_to_csv(code,url,refresh = refresh)
       csv2sqlite(csv_path,sqlite_path,table_name,col_types = readr::cols(.default = "c"))
-      index_fields <- read_csv(csv_path,n_max = 1) %>% select(-matches(" ID$|^Value$")) %>% names()
+      index_fields <- readr::read_csv(csv_path,n_max = 1) %>% select(-matches(" ID$|^Value$")) %>% names()
       index_xtab_fields(sqlite_path,table_name,index_fields)
       file.remove(csv_path)
     } else {
@@ -340,7 +352,7 @@ get_sqlite_xtab <- function(code,
     message("Opening local sqlite xtab...")
   }
   DBI::dbConnect(RSQLite::SQLite(), sqlite_path) %>%
-    dplyr::tbl("xtab_data")
+    tbl("xtab_data")
 }
 
 xtab_download_url_for <- function(code) {
@@ -358,6 +370,8 @@ get_xtab_list <- function(year=2016) {
 }
 
 #' get xtab in long form
+#'
+#' @param data input data frame
 #' @export
 standardize_xtab <- function(data){
   ns <- names(data)[grepl("^Dim: ",names(data))]
@@ -366,9 +380,9 @@ standardize_xtab <- function(data){
 
   data %>%
     gather_for_grep_string(key_string,grep_string) %>%
-    rlang::set_names(gsub("^DIM: | \\(\\d+\\)$","",names(.))) %>%
+    setNames(gsub("^DIM: | \\(\\d+\\)$","",names(.))) %>%
     strip_columns_for_grep_string("^Notes: ") %>%
-    dplyr::mutate(Value=as.numeric(Value,na=c("x", "F", "...", "..",NA)))
+    mutate(Value=as.numeric(.data$Value,na=c("x", "F", "...", "..",NA)))
 }
 
 
@@ -379,24 +393,25 @@ standardize_xtab <- function(data){
 #' @param url The url to the xml table download. Only needed if the table is not cached, but
 #' reommended to always include for reproducibility
 #' @param refresh Will refresh cached data if set to TRUE, default is FALSE
-#' @param time_value If set, will use this as the time variable, otherwise extract the time variable from the data.
+#' @param year_value If set, will use this as the time variable, otherwise extract the time variable from the data.
 #' Setting this will slightly speed up the parsing.
 #' @param temp A path to the downloaded xml zip file. Useful if file has already been downloaded and should not be
 #' downloaded again.
+#' @param system_unzip optionally use system unzip. Useful for large files where R unzip fails
 #'
 #' @export
-xml_xtab_for <- function(code,url,refresh=FALSE,time_value=NA,temp=NA,system_unzip=FALSE){
+xml_xtab_for <- function(code,url,refresh=FALSE,year_value=NA,temp=NA,system_unzip=FALSE){
   data <- NA
   path <- file.path(getOption("custom_data_path"),paste0(code,".rda"))
   if (!file.exists(path) | refresh) {
     exdir <- tempdir()
     if (is.na(temp)) {
       temp <- tempfile()
-      download.file(url,temp)
-      unzip_file(temp,exdir=exdir,system_unzip = TRUE)
+      utils::download.file(url,temp)
+      utils::unzip(temp,exdir=exdir,system_unzip = TRUE)
       unlink(temp)
     } else {
-      unzip_file(temp,exdir=exdir,system_unzip = TRUE)
+      utils::unzip(temp,exdir=exdir,system_unzip = TRUE)
     }
     # read xml xtab for 2006 data.
     message("Parsing XML")
@@ -414,13 +429,13 @@ xml_xtab_for <- function(code,url,refresh=FALSE,time_value=NA,temp=NA,system_unz
       xml_structure %>% xml_find_all(paste0("//structure:ConceptScheme/structure:Concept[@id='",c,"']/structure:Name[@xml:lang='en']")) %>%
         xml_text}) %>% unlist
 
-    concept_lookup <- rlang::set_names(concept_names,concepts)
+    concept_lookup <- setNames(concept_names,concepts)
 
     descriptions_for_code <- function(c){
       c <- gsub("0$","",c)
       base <- xml_structure %>% xml_find_all(paste0("//structure:CodeList[@id='CL_",toupper(c),"']/structure:Code"))
       desc_text = ifelse(length(xml_find_all(base[1] ,".//structure:Description[@xml:lang='en']"))==0,".//structure:Description",".//structure:Description[@xml:lang='en']")
-      rlang::set_names(
+      setNames(
         base %>% purrr::map(function(e){e %>% xml_find_all(desc_text) %>% xml_text}) %>% unlist %>% trimws(),
         base %>% purrr::map(function(e){xml_attr(e,"value")}) %>% unlist
       )
@@ -433,8 +448,8 @@ xml_xtab_for <- function(code,url,refresh=FALSE,time_value=NA,temp=NA,system_unz
     #l <- lapply(concepts,function(c){series %>% xml_find_all(paste0(".//generic:Value[@concept='",c,"']")) %>% xml_attr("value")})
 
     time_data <- function(series){
-      if (!is.na(time_value)) {
-        result=rep(time_value,length(series))
+      if (!is.na(year_value)) {
+        result=rep(year_value,length(series))
       } else {
         message("Extracting year data")
         series %>% xml_find_all(".//generic:Time") %>% xml_text
@@ -452,9 +467,9 @@ xml_xtab_for <- function(code,url,refresh=FALSE,time_value=NA,temp=NA,system_unz
 
     df=concepts %>%
       purrr::map(function(c){code_data(series,c)}) %>%
-      rlang::set_names(concept_names) %>%
+      setNames(concept_names) %>%
       tibble::as_tibble() %>%
-      dplyr::bind_cols(tibble::tibble(Year = time_data(series), Value = value_data(series)))
+      bind_cols(tibble::tibble(Year = time_data(series), Value = value_data(series)))
 
     for (i in seq(1,length(concepts),1)) {
       c=concepts[i]
@@ -471,9 +486,9 @@ xml_xtab_for <- function(code,url,refresh=FALSE,time_value=NA,temp=NA,system_unz
     }
 
     data <- df  %>%
-      rename(GeoUID=`Geography ID`) %>%
-      mutate(GeoUID = fix_ct_geo_format(GeoUID),
-             Value=as.numeric(Value))
+      rename(GeoUID=.data$`Geography ID`) %>%
+      mutate(GeoUID = fix_ct_geo_format(.data$GeoUID),
+             Value=as.numeric(.data$Value))
 
     saveRDS(data,path)
   } else {
@@ -484,15 +499,22 @@ xml_xtab_for <- function(code,url,refresh=FALSE,time_value=NA,temp=NA,system_unz
 
 #' Download xml xtab data from url, tag with code for caching
 #' useful for (2001) census profile data
+#'
+#' @param code xtab identifier
+#' @param url url for xtab download
+#' @param refresh optionally redownload and reprocess data, default \code{FALSE}
+#' @param year_value optionally specify the value of the year column insead of parsing it
+#' @param temp optionally specify the temp directory for file download
+#'
 #' @export
-xml_census_2001_profile <- function(code,url,refresh=FALSE,time_value=NA,temp=NA){
+xml_census_2001_profile <- function(code,url,refresh=FALSE,year_value=NA,temp=NA){
   data <- NA
   path <- file.path(getOption("custom_data_path"),paste0(code,".rda"))
   if (!file.exists(path) | refresh) {
     exdir <- tempdir()
     if (is.na(temp)) {
       temp <- tempfile()
-      download.file(url,temp)
+      utils::download.file(url,temp)
       utils::unzip(temp,exdir=exdir)
       unlink(temp)
     } else {
@@ -513,13 +535,13 @@ xml_census_2001_profile <- function(code,url,refresh=FALSE,time_value=NA,temp=NA
       xml_structure %>% xml_find_all(paste0("//structure:ConceptScheme/structure:Concept[@id='",c,"']/structure:Name[@xml:lang='en']")) %>%
         xml_text}) %>% unlist
 
-    concept_lookup <- rlang::set_names(concept_names,concepts)
+    concept_lookup <- setNames(concept_names,concepts)
 
     descriptions_for_code <- function(c){
       c <- gsub("0$","",c)
       base <- xml_structure %>% xml_find_all(paste0("//structure:CodeList[@id='CL_",toupper(c),"']/structure:Code"))
       desc_text = ifelse(length(xml_find_all(base[1] ,".//structure:Description[@xml:lang='en']"))==0,".//structure:Description",".//structure:Description[@xml:lang='en']")
-      rlang::set_names(
+      setNames(
         base %>% purrr::map(function(e){e %>% xml_find_all(desc_text) %>% xml_text}) %>% unlist %>% trimws(),
         base %>% purrr::map(function(e){xml_attr(e,"value")}) %>% unlist
       )
@@ -532,8 +554,8 @@ xml_census_2001_profile <- function(code,url,refresh=FALSE,time_value=NA,temp=NA
     #l <- lapply(concepts,function(c){series %>% xml_find_all(paste0(".//generic:Value[@concept='",c,"']")) %>% xml_attr("value")})
 
     time_data <- function(series){
-      if (!is.na(time_value)) {
-        result=rep(time_value,length(series))
+      if (!is.na(year_value)) {
+        result=rep(year_value,length(series))
       } else {
         message("Extracting year data")
         series %>% xml_find_all(".//generic:Time") %>% xml_text
@@ -551,9 +573,9 @@ xml_census_2001_profile <- function(code,url,refresh=FALSE,time_value=NA,temp=NA
 
     df=concepts %>%
       purrr::map(function(c){code_data(series,c)}) %>%
-      rlang::set_names(concept_names) %>%
+      setNames(concept_names) %>%
       tibble::as_tibble()  %>%
-      dplyr::bind_cols(tibble::tibble(Year = time_data(series), Value = value_data(series)))
+      bind_cols(tibble::tibble(Year = time_data(series), Value = value_data(series)))
 
     for (i in seq(1,length(concepts),1)) {
       c=concepts[i]
@@ -570,9 +592,9 @@ xml_census_2001_profile <- function(code,url,refresh=FALSE,time_value=NA,temp=NA
     }
 
     data <- df  %>%
-      rename(GeoUID=`Geography ID`) %>%
-      mutate(GeoUID = fix_ct_geo_format(GeoUID),
-             Value=as.numeric(Value))
+      rename(GeoUID=.data$`Geography ID`) %>%
+      mutate(GeoUID = fix_ct_geo_format(.data$GeoUID),
+             Value=as.numeric(.data$Value))
 
     unlink(exdir,recursive = TRUE)
     saveRDS(data,path)
@@ -583,6 +605,9 @@ xml_census_2001_profile <- function(code,url,refresh=FALSE,time_value=NA,temp=NA
 }
 
 #' Set up virtual conda env
+#'
+#' @param python_path path to local python
+#' @param conda path to local conda
 #' @export
 install_python_environment <- function(python_path="/opt/anaconda3/bin/python3.7",conda="/opt/anaconda3/bin/conda"){
   reticulate::use_python(python_path)
@@ -593,8 +618,15 @@ install_python_environment <- function(python_path="/opt/anaconda3/bin/python3.7
 }
 
 #' Use python to parse xml
+#'
+#' @param code xtab identifier
+#' @param url download url
+#' @param python_path path to local python
+#' @param conda path to local conda
+#' @param refresh optionally redownload and reprocess the xtab, default \code{FALSE}
+#' @param temp optionally specify path of downloaded zip file
 #' @export
-xml_to_csv <- function(code,url,python_path="/opt/anaconda3/bin/python3.7",refresh=FALSE,time_value=NA,temp=NA,
+xml_to_csv <- function(code,url,python_path="/opt/anaconda3/bin/python3.7",refresh=FALSE,temp=NA,
                        conda="/opt/anaconda3/bin/conda"){
   path <- file.path(getOption("custom_data_path"),paste0(code,".csv"))
   if (refresh | !file.exists(path)) {
@@ -603,7 +635,7 @@ xml_to_csv <- function(code,url,python_path="/opt/anaconda3/bin/python3.7",refre
       message("Downloading file")
       remove_temp=TRUE
       temp <- tempfile(".zip")
-      download.file(url,temp)
+      utils::download.file(url,temp)
     }
     message("Converting xml to csv")
     reticulate::use_python(python_path)
@@ -626,6 +658,7 @@ xml_to_csv <- function(code,url,python_path="/opt/anaconda3/bin/python3.7",refre
 #' reommended to always include for reproducibility
 #' @param python_path path to python executable, expects a conda environment 'r-reticulate' to exist.
 #' Can be set up with `install_python_environment`.
+#' @param conda local conda
 #' @param refresh Will refresh cached data if set to TRUE, default is FALSE
 #' @param temp A path to the downloaded xml zip file. Useful if file has already been downloaded and should not be
 #' downloaded again.
@@ -636,21 +669,29 @@ xml_via_python <- function(code,url,python_path="/opt/anaconda3/bin/python3.7",c
                   col_types = readr::cols(.default="c"))
 }
 
-
+#' Pivot xtab columns to long form
+#'
+#' @param data input tibble
+#' @param gather_key name of variable column when pivoting to long form
+#' @param grep_string string used to identify column names to pivot by regexp match
 #' @export
 gather_for_grep_string <- function(data,gather_key,grep_string){
   vars <- names(data)[grepl(grep_string,names(data))]
   short_vars <- gsub(grep_string,"",vars)
-  short_vars[duplicated(short_vars)]=tibble(v=short_vars[duplicated(short_vars)]) %>% mutate(n=paste0(v," (",row_number(),")")) %>% pull(n)
+  short_vars[duplicated(short_vars)]=tibble(v=short_vars[duplicated(short_vars)]) %>% mutate(n=paste0(.data$v," (",row_number(),")")) %>% pull(n)
   #names(data) <- gsub(grep_string,"",names(data))
   data %>%
-    rename(!!!set_names(vars,short_vars)) %>%
+    rename(!!!setNames(vars,short_vars)) %>%
     tidyr::gather(key=!!gather_key,value="Value",short_vars)
 }
 
+#' remove columns by regular expression
+#'
+#' @param data input data frame
+#' @param grep_string regexp to match against data frame names, matches will be removed
 #' @export
 strip_columns_for_grep_string <- function(data,grep_string){
-  data %>% dplyr::select(names(data)[!grepl(grep_string,names(data))])
+  data %>% select(names(data)[!grepl(grep_string,names(data))])
 }
 
 spark_import <- function(path){
@@ -664,9 +705,13 @@ spark_import <- function(path){
 }
 
 
+# Suppress warnings for missing bindings for '.' in R CMD check.
+if (getRversion() >= "2.15.1") utils::globalVariables(c("."))
 
 #' @import xml2
-#' @importFrom dplyr %>%
+#' @import dplyr
 #' @importFrom rlang .data
+#' @importFrom rlang :=
+#' @importFrom stats setNames
 NULL
 

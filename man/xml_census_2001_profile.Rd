@@ -5,7 +5,18 @@
 \title{Download xml xtab data from url, tag with code for caching
 useful for (2001) census profile data}
 \usage{
-xml_census_2001_profile(code, url, refresh = FALSE, time_value = NA, temp = NA)
+xml_census_2001_profile(code, url, refresh = FALSE, year_value = NA, temp = NA)
+}
+\arguments{
+\item{code}{xtab identifier}
+
+\item{url}{url for xtab download}
+
+\item{refresh}{optionally redownload and reprocess data, default \code{FALSE}}
+
+\item{year_value}{optionally specify the value of the year column insead of parsing it}
+
+\item{temp}{optionally specify the temp directory for file download}
 }
 \description{
 Download xml xtab data from url, tag with code for caching

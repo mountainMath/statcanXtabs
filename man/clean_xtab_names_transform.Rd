@@ -6,6 +6,9 @@
 \usage{
 clean_xtab_names_transform(data)
 }
+\arguments{
+\item{data}{input data frame}
+}
 \description{
 transform function for get_sqlite_xtab cleaning names
 }

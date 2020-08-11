@@ -6,6 +6,9 @@
 \usage{
 standardize_xtab(data)
 }
+\arguments{
+\item{data}{input data frame}
+}
 \description{
 get xtab in long form
 }

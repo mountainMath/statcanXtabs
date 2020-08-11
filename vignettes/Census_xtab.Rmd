@@ -1,0 +1,74 @@
+---
+title: "Census xtab"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Census_xtab}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(statcanXtabs)
+library(dplyr)
+library(ggplot2)
+```
+
+To import a Statistics Canada Census cross tabulation, locate the cross tabulation you are interested in [on the StatCan website](https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/dt-td/Index-eng.cfm?APATH=7&FL=I) and take note of the **code** for the table, as well as the **url** for the entire table download.
+
+For example, for the cross tabulation of household income statistics by structural type of dwelling, we [locate the corresponding webpage](https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/dt-td/Rp-eng.cfm?LANG=E&APATH=7&DETAIL=0&DIM=0&FL=S&FREE=0&GC=0&GID=0&GK=0&GRP=1&PID=110210&PRID=10&PTYPE=109445&S=0&SHOWALL=0&SUB=0&Temporal=2016,2017&THEME=0&VID=0&VNAMEE=Structural%20type%20of%20dwelling%20%2810%29&VNAMEF=Type%20de%20construction%20résidentielle%20%2810%29) and read off the *code* as "98-400-X2016101". Under the [download tab](https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/dt-td/Rp-eng.cfm?TABID=4&LANG=E&A=R&APATH=7&DETAIL=0&DIM=0&FL=S&FREE=0&GC=01&GL=-1&GID=1235625&GK=1&GRP=1&O=D&PID=110210&PRID=10&PTYPE=109445&S=0&SHOWALL=0&SUB=0&Temporal=2016&THEME=119&VID=0&VNAMEE=Structural%20type%20of%20dwelling%20(10)&VNAMEF=Type%20de%20construction%20résidentielle%20(10)&D1=0&D2=0&D3=0&D4=0&D5=0&D6=0) we also copy the link for the entire table CSV download.
+
+Calling the `get_sqlite_xtab` function with these two arguments will then download the data on the first invocation and sort it into an sqlite database and open a connection to that database.
+
+```{r}
+code <- "98-400-X2016101"
+url <- "https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/dt-td/CompDataDownload.cfm?LANG=E&PID=110210&OFT=CSV"
+xtab_data <- get_sqlite_xtab(code=code,url = url, cache_dir = tempdir())
+```
+
+The data can then be accessed using the `dbplyr` syntax. For example to see all the available columns we can load in the first row (don't forget to call `collect()` to execute the database fetch) and list the column names.
+
+```{r}
+xtab_data %>% head(1) %>% collect() %>% names()
+```
+
+If we are only interested in people residing in Metro Vancouver in 2016 and want to learn about the labour force status of movers, we can filter out the other variables in our database call and just select the ones we are interested in.
+
+The cross tabulations posted on the Statistics Canada website tend to be relatively clean (compared to custom requests, which are usually littered with inconsistent spelling and other problems), and we can infer the names of the "Total" categories by just prepending "Total - " to the column name. In this case that works for all but one of the filtered columns, which can be a bit of a pain to chase down.
+
+Also, we usually want to pivot the last columns from wide to long form, the `standardize_xtab` function takes care of that.
+
+```{r}
+vancouver_dwelling_income <- xtab_data %>%
+  filter(`GEO_CODE (POR)`=="933",
+         `Household type including census family structure` ==
+           "Total - Household type including census family structure") %>%
+  select(GeoUID=`GEO_CODE (POR)`, Name=GEO_NAME,`Structural type of dwelling`, matches("^Dim: ")) %>%
+  collect() %>%
+  standardize_xtab()
+
+vancouver_dwelling_income
+```
+
+Armed with this we can look at the labour force status by Mobility status 5 years ago.
+
+```{r}
+vancouver_dwelling_income %>%
+  filter(`Household income statistics`=="Median total income of households ($)",
+         `Structural type of dwelling` != "Other attached dwelling") %>%
+  ggplot(aes(x=`Structural type of dwelling`,y=Value)) +
+  geom_bar(stat="identity",fill="steelblue") +
+  scale_y_continuous(labels=scales::dollar) +
+  scale_fill_brewer(palette="Set1") +
+  coord_flip() +
+  labs(title="Metro Vancouver median household income",
+       y="Median household income",
+       caption="StatCan Census 2016, 98-400-X2016288")
+```
+

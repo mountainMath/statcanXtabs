@@ -9,7 +9,7 @@ xml_xtab_for(
   code,
   url,
   refresh = FALSE,
-  time_value = NA,
+  year_value = NA,
   temp = NA,
   system_unzip = FALSE
 )
@@ -22,11 +22,13 @@ reommended to always include for reproducibility}
 
 \item{refresh}{Will refresh cached data if set to TRUE, default is FALSE}
 
-\item{time_value}{If set, will use this as the time variable, otherwise extract the time variable from the data.
+\item{year_value}{If set, will use this as the time variable, otherwise extract the time variable from the data.
 Setting this will slightly speed up the parsing.}
 
 \item{temp}{A path to the downloaded xml zip file. Useful if file has already been downloaded and should not be
 downloaded again.}
+
+\item{system_unzip}{optionally use system unzip. Useful for large files where R unzip fails}
 }
 \description{
 Download xml xtab data from url, tag with code for caching

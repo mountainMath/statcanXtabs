@@ -9,6 +9,11 @@ install_python_environment(
   conda = "/opt/anaconda3/bin/conda"
 )
 }
+\arguments{
+\item{python_path}{path to local python}
+
+\item{conda}{path to local conda}
+}
 \description{
 Set up virtual conda env
 }

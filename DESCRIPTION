@@ -2,20 +2,29 @@ Package: statcanXtabs
 Type: Package
 Title: Helper function for managing StatCan xtabs
 Version: 0.1.0
-Author: Jens von Bergmann
-Maintainer: <jens@mountainmath.cat>
+Author: Jens von Bergmann <jens@mountainmath.ca>
+Maintainer: Jens von Bergmann <jens@mountainmath.ca>
 Description: Methods for importing StatCan xtabs into sqlite and csv form.
-License: MIT
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-Depends: dplyr (>= 0.7.2),
+Imports: dplyr (>= 1.0),
   tidyr,
   purrr,
+  rlang,
   xml2,
   zip,
-  RSQLite
+  RSQLite,
+  DBI,
+  httr,
+  readr,
+  rvest,
+  tibble
 RoxygenNote: 7.1.0.9000
 Suggests: knitr,
-    rmarkdown,
-    tidyverse
-VignetteBuilder: knitrs
+  ggplot2,
+  scales,
+  reticulate,
+  rmarkdown,
+  sparklyr
+VignetteBuilder: knitr

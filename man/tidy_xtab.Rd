@@ -8,6 +8,8 @@ tidy_xtab(data, remove_member_id = FALSE)
 }
 \arguments{
 \item{data}{data from get_sqlite_xtab after calling collect()}
+
+\item{remove_member_id}{optionally remove member id columns, default is \code{FALSE}.}
 }
 \description{
 transforms standard StatCan xtab to long form

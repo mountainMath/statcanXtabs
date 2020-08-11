@@ -23,6 +23,8 @@ reommended to always include for reproducibility}
 \item{python_path}{path to python executable, expects a conda environment 'r-reticulate' to exist.
 Can be set up with `install_python_environment`.}
 
+\item{conda}{local conda}
+
 \item{refresh}{Will refresh cached data if set to TRUE, default is FALSE}
 
 \item{temp}{A path to the downloaded xml zip file. Useful if file has already been downloaded and should not be

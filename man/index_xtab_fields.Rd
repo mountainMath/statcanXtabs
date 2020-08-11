@@ -11,7 +11,7 @@ index_xtab_fields(sqlite_path, table_name, index_fields = NULL)
 
 \item{table_name}{name of the table}
 
-\item{index_field}{optional vector of column names to index, defaul indexes all columns}
+\item{index_fields}{optional vector of column names to index, defaul indexes all columns}
 }
 \description{
 create indices on index_fields in the sqlite database in case they don't exist

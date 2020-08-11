@@ -6,6 +6,9 @@
 \usage{
 remove_xtab_notes_transform(data)
 }
+\arguments{
+\item{data}{input data frame}
+}
 \description{
 remove notes
 }

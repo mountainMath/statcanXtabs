@@ -40,6 +40,7 @@
 
 
 <meta property="og:title" content="get_sqlite_xtab — get_sqlite_xtab" />
+<meta property="og:description" content="get_sqlite_xtab" />
 
 
 
@@ -86,6 +87,18 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/Census_xtab.html">Census xtab</a>
+    </li>
+  </ul>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -108,9 +121,18 @@
     </div>
 
     <div class="ref-description">
+    <p>get_sqlite_xtab</p>
     </div>
 
-    <pre class="usage"><span class='fu'>get_sqlite_xtab</span>(<span class='st'>"98-400-X2016288"</span>,<span class='st'>"https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/dt-td/CompDataDownload.cfm?LANG=E&amp;PID=111849&amp;OFT=CSV"</span>)</pre>
+    <pre class="usage"><span class='fu'>get_sqlite_xtab</span>(
+  <span class='no'>code</span>,
+  <span class='kw'>url</span> <span class='kw'>=</span> <span class='fl'>NA</span>,
+  <span class='kw'>cache_dir</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/options.html'>getOption</a></span>(<span class='st'>"statcanXtab.cache_dir"</span>),
+  <span class='kw'>transform</span> <span class='kw'>=</span> <span class='no'>standard_xtab_transform</span>,
+  <span class='kw'>refresh</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>existing_unzip_path</span> <span class='kw'>=</span> <span class='fl'>NA</span>,
+  <span class='kw'>format</span> <span class='kw'>=</span> <span class='st'>"csv"</span>
+)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -125,20 +147,25 @@
     </tr>
     <tr>
       <th>cache_dir</th>
-      <td><p>optional cache directory.</p></td>
+      <td><p>optional cache directory, default is <code><a href='https://rdrr.io/r/base/options.html'>getOption("statcanXtab.cache_dir")</a></code>.</p></td>
+    </tr>
+    <tr>
+      <th>transform</th>
+      <td><p>transform to apply to data, default is <code>standard_xtab_transform</code> which removes the notes
+column, cleans up the variable names and casts the <code>Value</code> column to numeric.</p></td>
     </tr>
     <tr>
       <th>refresh</th>
-      <td><p>redownload and parse data, default (FALSE)}
-
-{existing_unzip_path}{optional path to unzipped xtab, useful for large (&gt;4GB unzipped) xtabs on windows machines}
-
-{format}{data format of xtab, defaults to "csv". Other valid options are "xml" and "python_xml". Set according
-to the format of the data, and if conversion through xml should be done via python for better performance}
-}
-{
-get_sqlite_xtab
-}</p></td>
+      <td><p>redownload and parse data, default <code>FALSE</code></p></td>
+    </tr>
+    <tr>
+      <th>existing_unzip_path</th>
+      <td><p>optional path to unzipped xtab, useful for large (&gt;4GB unzipped) xtabs on windows machines</p></td>
+    </tr>
+    <tr>
+      <th>format</th>
+      <td><p>data format of xtab, defaults to "csv". Other valid options are "xml" and "python_xml". Set according
+to the format of the data, and if conversion through xml should be done via python for better performance</p></td>
     </tr>
     </table>
 
@@ -154,7 +181,7 @@ get_sqlite_xtab
 
       <footer>
       <div class="copyright">
-  <p>Developed by .</p>
+  <p>Developed by Jens von Bergmann.</p>
 </div>
 
 <div class="pkgdown">

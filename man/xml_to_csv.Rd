@@ -9,10 +9,22 @@ xml_to_csv(
   url,
   python_path = "/opt/anaconda3/bin/python3.7",
   refresh = FALSE,
-  time_value = NA,
   temp = NA,
   conda = "/opt/anaconda3/bin/conda"
 )
+}
+\arguments{
+\item{code}{xtab identifier}
+
+\item{url}{download url}
+
+\item{python_path}{path to local python}
+
+\item{refresh}{optionally redownload and reprocess the xtab, default \code{FALSE}}
+
+\item{temp}{optionally specify path of downloaded zip file}
+
+\item{conda}{path to local conda}
 }
 \description{
 Use python to parse xml

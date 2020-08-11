@@ -90,6 +90,18 @@ useful for (2001) census profile data" />
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/Census_xtab.html">Census xtab</a>
+    </li>
+  </ul>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -117,8 +129,32 @@ useful for (2001) census profile data</h1>
 useful for (2001) census profile data</p>
     </div>
 
-    <pre class="usage"><span class='fu'>xml_census_2001_profile</span>(<span class='no'>code</span>, <span class='no'>url</span>, <span class='kw'>refresh</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>time_value</span> <span class='kw'>=</span> <span class='fl'>NA</span>, <span class='kw'>temp</span> <span class='kw'>=</span> <span class='fl'>NA</span>)</pre>
+    <pre class="usage"><span class='fu'>xml_census_2001_profile</span>(<span class='no'>code</span>, <span class='no'>url</span>, <span class='kw'>refresh</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>year_value</span> <span class='kw'>=</span> <span class='fl'>NA</span>, <span class='kw'>temp</span> <span class='kw'>=</span> <span class='fl'>NA</span>)</pre>
 
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>code</th>
+      <td><p>xtab identifier</p></td>
+    </tr>
+    <tr>
+      <th>url</th>
+      <td><p>url for xtab download</p></td>
+    </tr>
+    <tr>
+      <th>refresh</th>
+      <td><p>optionally redownload and reprocess data, default <code>FALSE</code></p></td>
+    </tr>
+    <tr>
+      <th>year_value</th>
+      <td><p>optionally specify the value of the year column insead of parsing it</p></td>
+    </tr>
+    <tr>
+      <th>temp</th>
+      <td><p>optionally specify the temp directory for file download</p></td>
+    </tr>
+    </table>
 
 
   </div>
@@ -132,7 +168,7 @@ useful for (2001) census profile data</p>
 
       <footer>
       <div class="copyright">
-  <p>Developed by .</p>
+  <p>Developed by Jens von Bergmann.</p>
 </div>
 
 <div class="pkgdown">
