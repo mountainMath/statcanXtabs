@@ -4,7 +4,7 @@ Convenience functions to load and manage StatCan cross tabulations
 install via
 
 ```
-remotes::install_github("/mountainmath/statcanXtabs")
+remotes::install_github("mountainmath/statcanXtabs")
 ```
 
 More documentation is available on the [pkgdown site](https://mountainmath.github.io/statcanXtabs).

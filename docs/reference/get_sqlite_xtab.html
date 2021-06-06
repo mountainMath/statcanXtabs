@@ -80,7 +80,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -124,15 +124,15 @@
     <p>get_sqlite_xtab</p>
     </div>
 
-    <pre class="usage"><span class='fu'>get_sqlite_xtab</span>(
-  <span class='no'>code</span>,
-  <span class='kw'>url</span> <span class='kw'>=</span> <span class='fl'>NA</span>,
-  <span class='kw'>cache_dir</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/options.html'>getOption</a></span>(<span class='st'>"statcanXtab.cache_dir"</span>),
-  <span class='kw'>transform</span> <span class='kw'>=</span> <span class='no'>standard_xtab_transform</span>,
-  <span class='kw'>refresh</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>existing_unzip_path</span> <span class='kw'>=</span> <span class='fl'>NA</span>,
-  <span class='kw'>format</span> <span class='kw'>=</span> <span class='st'>"csv"</span>
-)</pre>
+    <pre class="usage"><span class='fu'>get_sqlite_xtab</span><span class='op'>(</span>
+  <span class='va'>code</span>,
+  url <span class='op'>=</span> <span class='cn'>NA</span>,
+  cache_dir <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/options.html'>getOption</a></span><span class='op'>(</span><span class='st'>"statcanXtab.cache_dir"</span><span class='op'>)</span>,
+  transform <span class='op'>=</span> <span class='va'>standard_xtab_transform</span>,
+  refresh <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  existing_unzip_path <span class='op'>=</span> <span class='cn'>NA</span>,
+  format <span class='op'>=</span> <span class='st'>"csv"</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -185,7 +185,7 @@ to the format of the data, and if conversion through xml should be done via pyth
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>
