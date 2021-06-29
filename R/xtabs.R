@@ -265,6 +265,7 @@ get_sqlite_xtab <- function(code,
                             refresh=FALSE,
                             existing_unzip_path=NA,
                             format="csv"){
+  zipped_info <- NULL
   if (is.null(cache_dir)) stop("Cache directory needs to be set!")
   sqlite_path <- file.path(cache_dir,paste0(code,".sqlite"))
   if (refresh || !file.exists(sqlite_path)) {

@@ -1,7 +1,7 @@
 Package: statcanXtabs
 Type: Package
 Title: Helper function for managing StatCan xtabs
-Version: 0.1.0
+Version: 0.1.1
 Author: Jens von Bergmann <jens@mountainmath.ca>
 Maintainer: Jens von Bergmann <jens@mountainmath.ca>
 Description: Methods for importing StatCan xtabs into sqlite and csv form.
@@ -20,7 +20,7 @@ Imports: dplyr (>= 1.0),
   readr,
   rvest,
   tibble
-RoxygenNote: 7.1.0.9000
+RoxygenNote: 7.1.1
 Suggests: knitr,
   ggplot2,
   scales,
