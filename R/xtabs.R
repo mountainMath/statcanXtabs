@@ -115,22 +115,20 @@ tidy_xtab <- function(data,remove_member_id=FALSE){
 }
 
 
-get_tmp_zip_archive <- function(url,exdir=tempdir()){
+get_tmp_zip_archive <- function(url,exdir=NULL){
+  if (is.null(exdir)) {
+    exdir=file.path(tempdir(),digest::digest(url))
+    if (!dir.exists(exdir)) dir.create(exdir)
+  }
   message("Downloading data ...")
   temp=tempfile(fileext = ".zip")
   utils::download.file(url,temp)
   message("Unpacking data ...")
-  zipped_info <- zip::zip_list(temp) %>% mutate(Name=.data$filename,Length=.data$uncompressed_size)
-  # unzip_type=ifelse(is.null(getOption("unzip")),"internal",getOption("unzip"))
-  # zipped_info <- utils::unzip(temp, list=TRUE,unzip=unzip_type)
-  # large <- sum(zipped_info$Length) > 4000000000
-  # if (large && unzip_type=="internal")
-  #   message(paste0("File might be too large for R internal unzip.\n",
-  #                  "If unzip fails, consider setting the 'R_UNZIPCMD' environment vairable or\n",
-  #                  "downlod and unzip the file manually and use the 'existing_unzip_path' parameter.\n",
-  #                  "Downloaded archive is at ",temp))
-  #utils::unzip(temp,exdir=exdir,unzip=unzip_type)
   zip::unzip(temp,exdir=exdir)
+  zipped_info<-tibble(filename=dir(exdir)) %>%
+    mutate(Name=.data$filename,
+           Length=lapply(.data$filename,function(f)file.size(file.path(exdir,f))) %>% unlist)
+  zipped_info
   unlink(temp)
   zipped_info
 }
@@ -294,7 +292,8 @@ get_sqlite_xtab <- function(code,
       }
     } else {
       if (is.na(url)) stop("Need either url or existing_unzip_path set!")
-      exdir=tempdir()
+      exdir=file.path(tempdir(),digest::digest(url))
+      if (!dir.exists(exdir)) dir.create(exdir)
       if (format != "python_xml") {
         zipped_info <- get_tmp_zip_archive(url,exdir)$Name
         data_file=file.path(exdir,zipped_info[grepl("_data\\.csv$",zipped_info)])
