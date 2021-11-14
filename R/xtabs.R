@@ -609,7 +609,8 @@ xml_census_2001_profile <- function(code,url,refresh=FALSE,year_value=NA,temp=NA
 #' @param python_path path to local python
 #' @param conda path to local conda
 #' @export
-install_python_environment <- function(python_path="/opt/anaconda3/bin/python3.7",conda="/opt/anaconda3/bin/conda"){
+install_python_environment <- function(python_path=getOption("python_path"),
+                                       conda=getOption("conda_path")){
   reticulate::use_python(python_path)
   #reticulate::conda_binary(conda = python_path)
   #reticulate::conda_remove("r-reticulate")
@@ -626,8 +627,10 @@ install_python_environment <- function(python_path="/opt/anaconda3/bin/python3.7
 #' @param refresh optionally redownload and reprocess the xtab, default \code{FALSE}
 #' @param temp optionally specify path of downloaded zip file
 #' @export
-xml_to_csv <- function(code,url,python_path="/opt/anaconda3/bin/python3.7",refresh=FALSE,temp=NA,
-                       conda="/opt/anaconda3/bin/conda"){
+xml_to_csv <- function(code,url,
+                       python_path=getOption("python_path"),
+                       conda=getOption("conda_path"),
+                       refresh=FALSE,temp=NA){
   path <- file.path(getOption("custom_data_path"),paste0(code,".csv"))
   if (refresh | !file.exists(path)) {
     remove_temp=FALSE
@@ -664,7 +667,10 @@ xml_to_csv <- function(code,url,python_path="/opt/anaconda3/bin/python3.7",refre
 #' downloaded again.
 #'
 #' @export
-xml_via_python <- function(code,url,python_path="/opt/anaconda3/bin/python3.7",conda="/opt/anaconda3/bin/conda",refresh=FALSE,temp=NA){
+xml_via_python <- function(code,url,
+                           python_path=getOption("python_path"),
+                           conda=getOption("conda_path"),
+                           refresh=FALSE,temp=NA){
   readr::read_csv(xml_to_csv(code,url,python_path=python_path,conda=conda,refresh=refresh,temp=temp),
                   col_types = readr::cols(.default="c"))
 }

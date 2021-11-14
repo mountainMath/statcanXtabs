@@ -8,8 +8,8 @@ useful for older (2006) data that does not come as csv option}
 xml_via_python(
   code,
   url,
-  python_path = "/opt/anaconda3/bin/python3.7",
-  conda = "/opt/anaconda3/bin/conda",
+  python_path = getOption("python_path"),
+  conda = getOption("conda_path"),
   refresh = FALSE,
   temp = NA
 )

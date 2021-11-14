@@ -19,8 +19,9 @@ Imports: dplyr (>= 1.0),
   httr,
   readr,
   rvest,
+  digest,
   tibble
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Suggests: knitr,
   ggplot2,
   scales,

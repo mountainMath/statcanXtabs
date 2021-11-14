@@ -5,8 +5,8 @@
 \title{Set up virtual conda env}
 \usage{
 install_python_environment(
-  python_path = "/opt/anaconda3/bin/python3.7",
-  conda = "/opt/anaconda3/bin/conda"
+  python_path = getOption("python_path"),
+  conda = getOption("conda_path")
 )
 }
 \arguments{
