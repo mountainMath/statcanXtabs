@@ -31,7 +31,7 @@ def convert_statcan_xml_to_csv(infile, outfile):
     concepts = list(
         set(map(lambda x: list(x.keys())[0], all_concepts)) - set(["GEO", "OBS_VALUE", "OBS_STATUS", "TIME"]))
 
-    print("Extracting concepts: " + ', '.join(map(str, concepts)), flush=True)
+    print("Extracting concepts: " + ', '.join(list(map(str, concepts))), flush=True)
 
     def get_description(elem):
         value = elem.attrib['value']

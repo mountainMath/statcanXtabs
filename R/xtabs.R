@@ -15,8 +15,11 @@ csv2sqlite <- function(csv_file, sqlite_file, table_name, transform=NULL,chunk_s
                        append=FALSE,col_types=NULL,na=c(NA,"..","","...","F"),
                        text_encoding="UTF8") {
    # Connect to database.
-  if (!append && file.exists(sqlite_file)) file.remove(sqlite_file)
+  #if (!append && file.exists(sqlite_file)) file.remove(sqlite_file)
   con <- DBI::dbConnect(RSQLite::SQLite(), dbname=sqlite_file)
+  tables <- DBI::dbListTables(con)
+
+  if (!append && (table_name %in% tables)) DBI::dbRemoveTable(con,table_name)
 
   chunk_handler <- function(df, pos) {
     if (nrow(readr::problems(df)) > 0) print(readr::problems(df))
@@ -122,7 +125,7 @@ get_tmp_zip_archive <- function(url,exdir=NULL){
   }
   message("Downloading data ...")
   temp=tempfile(fileext = ".zip")
-  utils::download.file(url,temp)
+  utils::download.file(url,temp,mode="wb")
   message("Unpacking data ...")
   zip::unzip(temp,exdir=exdir)
   zipped_info<-tibble(filename=dir(exdir)) %>%
@@ -264,6 +267,7 @@ get_sqlite_xtab <- function(code,
                             existing_unzip_path=NA,
                             format="csv"){
   zipped_info <- NULL
+  exdir <- tempdir()
   if (is.null(cache_dir)) stop("Cache directory needs to be set!")
   sqlite_path <- file.path(cache_dir,paste0(code,".sqlite"))
   if (refresh || !file.exists(sqlite_path)) {
@@ -309,7 +313,7 @@ get_sqlite_xtab <- function(code,
         setNames(data,n)
         data
       }
-      exdir=tempdir()
+      #exdir=tempdir()
       structure_path=file.path(exdir,zipped_info[grepl("Structure_.*\\.xml$",zipped_info)])
       generic_path=file.path(exdir,zipped_info[grepl("Generic_.*\\.xml$",zipped_info)])
       df <- parse_xml_xtab(structure_path,generic_path) %>%
@@ -407,7 +411,7 @@ xml_xtab_for <- function(code,url,refresh=FALSE,year_value=NA,temp=NA,system_unz
     exdir <- tempdir()
     if (is.na(temp)) {
       temp <- tempfile()
-      utils::download.file(url,temp)
+      utils::download.file(url,temp,mode="wb")
       utils::unzip(temp,exdir=exdir,system_unzip = TRUE)
       unlink(temp)
     } else {
@@ -514,7 +518,7 @@ xml_census_2001_profile <- function(code,url,refresh=FALSE,year_value=NA,temp=NA
     exdir <- tempdir()
     if (is.na(temp)) {
       temp <- tempfile()
-      utils::download.file(url,temp)
+      utils::download.file(url,temp,mode="wb")
       utils::unzip(temp,exdir=exdir)
       unlink(temp)
     } else {
@@ -611,11 +615,10 @@ xml_census_2001_profile <- function(code,url,refresh=FALSE,year_value=NA,temp=NA
 #' @export
 install_python_environment <- function(python_path=getOption("python_path"),
                                        conda=getOption("conda_path")){
-  reticulate::use_python(python_path)
-  #reticulate::conda_binary(conda = python_path)
-  #reticulate::conda_remove("r-reticulate")
-  reticulate::use_condaenv("r-reticulate",conda=conda)
-  reticulate::conda_create("r-reticulate",packages="lxml",conda=conda)
+  #reticulate::use_python(python_path)
+  #reticulate::use_condaenv("r-reticulate",conda=conda)
+  #reticulate::conda_create("r-reticulate",packages="lxml",conda=conda)
+  reticulate::py_install("lxml")
 }
 
 #' Use python to parse xml
@@ -637,13 +640,13 @@ xml_to_csv <- function(code,url,
     if (is.na(temp)) {
       message("Downloading file")
       remove_temp=TRUE
-      temp <- tempfile(".zip")
-      utils::download.file(url,temp)
+      temp <- tempfile(fileext=".zip")
+      utils::download.file(url,temp,mode="wb")
     }
     message("Converting xml to csv")
-    reticulate::use_python(python_path)
-    reticulate::conda_binary(conda = python_path)
-    reticulate::use_condaenv("r-reticulate",conda=conda)
+    #reticulate::use_python(python_path)
+    #reticulate::conda_binary(conda = python_path)
+    #reticulate::use_condaenv("r-reticulate",conda=conda)
     statcan = reticulate::import_from_path("statcan",file.path(system.file(package="statcanXtabs")))
     statcan$convert_statcan_xml_to_csv(temp,path)
     if (remove_temp) unlink(temp)
