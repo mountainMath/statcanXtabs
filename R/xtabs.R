@@ -379,12 +379,14 @@ get_xtab_list <- function(year=2016) {
 #' @export
 standardize_xtab <- function(data){
   ns <- names(data)[grepl("^Dim: ",names(data))]
-  grep_string <- paste0(gsub(" \\(\\d+\\): .+$","",ns[1])," \\(\\d+\\): Member ID: \\[\\d+\\]: ")
-  key_string <- paste0(gsub("^Dim: ","",gsub(" \\(\\d+\\): .+$","",ns[1])))
+  grep_string <- paste0(gsub(" \\(\\d+\\): .+$","",ns[1])," \\(\\d+\\): Member ID: \\[\\d+\\]: ",
+                        "|",
+                        gsub(" \\(\\d+[ABCD]\\): .+$","",ns[1])," \\(\\d+[ABCD]\\): Member ID: \\[\\d+\\]: ")
+  key_string <- paste0(gsub("^Dim: ","",gsub(" \\(\\d+\\): .+$| \\(\\d+[ABCD]\\): .+$","",ns[1])))
 
   data %>%
     gather_for_grep_string(key_string,grep_string) %>%
-    setNames(gsub("^DIM: | \\(\\d+\\)$","",names(.))) %>%
+    setNames(gsub("^DIM: | \\(\\d+\\)$| \\(\\d+[ABCD]\\)$","",names(.))) %>%
     strip_columns_for_grep_string("^Notes: ") %>%
     mutate(Value=as.numeric(.data$Value,na=c("x", "F", "...", "..",NA)))
 }
