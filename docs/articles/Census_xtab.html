@@ -19,6 +19,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -31,23 +33,17 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">statcanXtabs</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
 <li>
-  <a href="../index.html">
-    <span class="fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
-<li>
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
      
     <span class="caret"></span>
@@ -69,7 +65,7 @@
 
       
 
-      </header><script src="Census_xtab_files/header-attrs-2.11/header-attrs.js"></script><div class="row">
+      </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Census xtab</h1>
@@ -83,8 +79,8 @@
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">statcanXtabs</span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">statcanXtabs</span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Attaching package: 'dplyr'</span>
 <span class="co">#&gt; The following objects are masked from 'package:stats':</span>
@@ -93,21 +89,34 @@
 <span class="co">#&gt; The following objects are masked from 'package:base':</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;     intersect, setdiff, setequal, union</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span></code></pre></div>
-<p>To import a Statistics Canada Census cross tabulation, locate the cross tabulation you are interested in <a href="https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/dt-td/Index-eng.cfm?APATH=7&amp;FL=I">on the StatCan website</a> and take note of the <strong>code</strong> for the table, as well as the <strong>url</strong> for the entire table download.</p>
-<p>For example, for the cross tabulation of household income statistics by structural type of dwelling, we <a href="https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/dt-td/Rp-eng.cfm?LANG=E&amp;APATH=7&amp;DETAIL=0&amp;DIM=0&amp;FL=S&amp;FREE=0&amp;GC=0&amp;GID=0&amp;GK=0&amp;GRP=1&amp;PID=110210&amp;PRID=10&amp;PTYPE=109445&amp;S=0&amp;SHOWALL=0&amp;SUB=0&amp;Temporal=2016,2017&amp;THEME=0&amp;VID=0&amp;VNAMEE=Structural%20type%20of%20dwelling%20%2810%29&amp;VNAMEF=Type%20de%20construction%20r%C3%A9sidentielle%20%2810%29">locate the corresponding webpage</a> and read off the <em>code</em> as “98-400-X2016101”. Under the <a href="https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/dt-td/Rp-eng.cfm?TABID=4&amp;LANG=E&amp;A=R&amp;APATH=7&amp;DETAIL=0&amp;DIM=0&amp;FL=S&amp;FREE=0&amp;GC=01&amp;GL=-1&amp;GID=1235625&amp;GK=1&amp;GRP=1&amp;O=D&amp;PID=110210&amp;PRID=10&amp;PTYPE=109445&amp;S=0&amp;SHOWALL=0&amp;SUB=0&amp;Temporal=2016&amp;THEME=119&amp;VID=0&amp;VNAMEE=Structural%20type%20of%20dwelling%20(10)&amp;VNAMEF=Type%20de%20construction%20r%C3%A9sidentielle%20(10)&amp;D1=0&amp;D2=0&amp;D3=0&amp;D4=0&amp;D5=0&amp;D6=0">download tab</a> we also copy the link for the entire table CSV download.</p>
-<p>Calling the <code>get_sqlite_xtab</code> function with these two arguments will then download the data on the first invocation and sort it into an sqlite database and open a connection to that database.</p>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></code></pre></div>
+<p>To import a Statistics Canada Census cross tabulation, locate the
+cross tabulation you are interested in <a href="https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/dt-td/Index-eng.cfm?APATH=7&amp;FL=I" class="external-link">on
+the StatCan website</a> and take note of the <strong>code</strong> for
+the table, as well as the <strong>url</strong> for the entire table
+download.</p>
+<p>For example, for the cross tabulation of household income statistics
+by structural type of dwelling, we <a href="https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/dt-td/Rp-eng.cfm?LANG=E&amp;APATH=7&amp;DETAIL=0&amp;DIM=0&amp;FL=S&amp;FREE=0&amp;GC=0&amp;GID=0&amp;GK=0&amp;GRP=1&amp;PID=110210&amp;PRID=10&amp;PTYPE=109445&amp;S=0&amp;SHOWALL=0&amp;SUB=0&amp;Temporal=2016,2017&amp;THEME=0&amp;VID=0&amp;VNAMEE=Structural%20type%20of%20dwelling%20%2810%29&amp;VNAMEF=Type%20de%20construction%20r%C3%A9sidentielle%20%2810%29" class="external-link">locate
+the corresponding webpage</a> and read off the <em>code</em> as
+“98-400-X2016101”. Under the <a href="https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/dt-td/Rp-eng.cfm?TABID=4&amp;LANG=E&amp;A=R&amp;APATH=7&amp;DETAIL=0&amp;DIM=0&amp;FL=S&amp;FREE=0&amp;GC=01&amp;GL=-1&amp;GID=1235625&amp;GK=1&amp;GRP=1&amp;O=D&amp;PID=110210&amp;PRID=10&amp;PTYPE=109445&amp;S=0&amp;SHOWALL=0&amp;SUB=0&amp;Temporal=2016&amp;THEME=119&amp;VID=0&amp;VNAMEE=Structural%20type%20of%20dwelling%20(10)&amp;VNAMEF=Type%20de%20construction%20r%C3%A9sidentielle%20(10)&amp;D1=0&amp;D2=0&amp;D3=0&amp;D4=0&amp;D5=0&amp;D6=0" class="external-link">download
+tab</a> we also copy the link for the entire table CSV download.</p>
+<p>Calling the <code>get_sqlite_xtab</code> function with these two
+arguments will then download the data on the first invocation and sort
+it into an sqlite database and open a connection to that database.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">code</span> <span class="op">&lt;-</span> <span class="st">"98-400-X2016101"</span>
 <span class="va">url</span> <span class="op">&lt;-</span> <span class="st">"https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/dt-td/CompDataDownload.cfm?LANG=E&amp;PID=110210&amp;OFT=CSV"</span>
-<span class="va">xtab_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_sqlite_xtab.html">get_sqlite_xtab</a></span><span class="op">(</span>code<span class="op">=</span><span class="va">code</span>,url <span class="op">=</span> <span class="va">url</span>, cache_dir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>
+<span class="va">xtab_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_sqlite_xtab.html">get_sqlite_xtab</a></span><span class="op">(</span>code<span class="op">=</span><span class="va">code</span>,url <span class="op">=</span> <span class="va">url</span>, cache_dir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>
 <span class="co">#&gt; Downloading data ...</span>
 <span class="co">#&gt; Unpacking data ...</span>
 <span class="co">#&gt; Importing xtab ...</span>
 <span class="co">#&gt; [1] "Indexing xtab..."</span></code></pre></div>
-<p>The data can then be accessed using the <code>dbplyr</code> syntax. For example to see all the available columns we can load in the first row (don’t forget to call <code><a href="https://dplyr.tidyverse.org/reference/compute.html">collect()</a></code> to execute the database fetch) and list the column names.</p>
+<p>The data can then be accessed using the <code>dbplyr</code> syntax.
+For example to see all the available columns we can load in the first
+row (don’t forget to call <code><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect()</a></code> to execute the database
+fetch) and list the column names.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">xtab_data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html">collect</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="op">)</span>
+<code class="sourceCode R"><span class="va">xtab_data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="op">)</span>
 <span class="co">#&gt;  [1] "CENSUS_YEAR"                                                                                    </span>
 <span class="co">#&gt;  [2] "GEO_CODE (POR)"                                                                                 </span>
 <span class="co">#&gt;  [3] "GEO_LEVEL"                                                                                      </span>
@@ -122,44 +131,54 @@
 <span class="co">#&gt; [12] "Dim: Household income statistics (3): Member ID: [1]: Total - Household income statistics"      </span>
 <span class="co">#&gt; [13] "Dim: Household income statistics (3): Member ID: [2]: Median total income of households ($)"    </span>
 <span class="co">#&gt; [14] "Dim: Household income statistics (3): Member ID: [3]: Median after-tax income of households ($)"</span></code></pre></div>
-<p>If we are only interested in people residing in Metro Vancouver in 2016 and want to learn about the labour force status of movers, we can filter out the other variables in our database call and just select the ones we are interested in.</p>
-<p>The cross tabulations posted on the Statistics Canada website tend to be relatively clean (compared to custom requests, which are usually littered with inconsistent spelling and other problems), and we can infer the names of the “Total” categories by just prepending “Total -” to the column name. In this case that works for all but one of the filtered columns, which can be a bit of a pain to chase down.</p>
-<p>Also, we usually want to pivot the last columns from wide to long form, the <code>standardize_xtab</code> function takes care of that.</p>
+<p>If we are only interested in people residing in Metro Vancouver in
+2016 and want to learn about the labour force status of movers, we can
+filter out the other variables in our database call and just select the
+ones we are interested in.</p>
+<p>The cross tabulations posted on the Statistics Canada website tend to
+be relatively clean (compared to custom requests, which are usually
+littered with inconsistent spelling and other problems), and we can
+infer the names of the “Total” categories by just prepending “Total -”
+to the column name. In this case that works for all but one of the
+filtered columns, which can be a bit of a pain to chase down.</p>
+<p>Also, we usually want to pivot the last columns from wide to long
+form, the <code>standardize_xtab</code> function takes care of that.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">vancouver_dwelling_income</span> <span class="op">&lt;-</span> <span class="va">xtab_data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
-  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">`GEO_CODE (POR)`</span><span class="op">==</span><span class="st">"933"</span>,
+<code class="sourceCode R"><span class="va">vancouver_dwelling_income</span> <span class="op">&lt;-</span> <span class="va">xtab_data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">`GEO_CODE (POR)`</span><span class="op">==</span><span class="st">"933"</span>,
          <span class="va">`Household type including census family structure`</span> <span class="op">==</span>
-           <span class="st">"Total - Household type including census family structure"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
-  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span>GeoUID<span class="op">=</span><span class="va">`GEO_CODE (POR)`</span>, Name<span class="op">=</span><span class="va">GEO_NAME</span>,<span class="va">`Structural type of dwelling`</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html">matches</a></span><span class="op">(</span><span class="st">"^Dim: "</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
-  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html">collect</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
+           <span class="st">"Total - Household type including census family structure"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span>GeoUID<span class="op">=</span><span class="va">`GEO_CODE (POR)`</span>, Name<span class="op">=</span><span class="va">GEO_NAME</span>,<span class="va">`Structural type of dwelling`</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">matches</a></span><span class="op">(</span><span class="st">"^Dim: "</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
   <span class="fu"><a href="../reference/standardize_xtab.html">standardize_xtab</a></span><span class="op">(</span><span class="op">)</span>
 
 <span class="va">vancouver_dwelling_income</span>
-<span class="co">#&gt; # A tibble: 30 × 5</span>
-<span class="co">#&gt;    GeoUID Name      `Structural type of dwelling`  `Household income sta…  Value</span>
-<span class="co">#&gt;    &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;                          &lt;chr&gt;                   &lt;dbl&gt;</span>
-<span class="co">#&gt;  1 933    Vancouver Total - Structural type of dw… Total - Household inc… 960895</span>
-<span class="co">#&gt;  2 933    Vancouver Single-detached house          Total - Household inc… 282360</span>
-<span class="co">#&gt;  3 933    Vancouver Apartment in a building that … Total - Household inc… 160060</span>
-<span class="co">#&gt;  4 933    Vancouver Other attached dwelling        Total - Household inc… 513900</span>
-<span class="co">#&gt;  5 933    Vancouver Semi-detached house            Total - Household inc…  20530</span>
-<span class="co">#&gt;  6 933    Vancouver Row house                      Total - Household inc…  93415</span>
-<span class="co">#&gt;  7 933    Vancouver Apartment or flat in a duplex  Total - Household inc… 156445</span>
-<span class="co">#&gt;  8 933    Vancouver Apartment in a building that … Total - Household inc… 242200</span>
-<span class="co">#&gt;  9 933    Vancouver Other single-attached house    Total - Household inc…   1310</span>
-<span class="co">#&gt; 10 933    Vancouver Movable dwelling               Total - Household inc…   4580</span>
-<span class="co">#&gt; # … with 20 more rows</span></code></pre></div>
-<p>Armed with this we can look at the labour force status by Mobility status 5 years ago.</p>
+<span class="co">#&gt; <span style="color: #949494;"># A tibble: 30 × 5</span></span>
+<span class="co">#&gt;    GeoUID Name      `Structural type of dwelling`        `Household inc…`  Value</span>
+<span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> 933    Vancouver Total - Structural type of dwelling  Total - Househo… <span style="text-decoration: underline;">960</span>895</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> 933    Vancouver Single-detached house                Total - Househo… <span style="text-decoration: underline;">282</span>360</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> 933    Vancouver Apartment in a building that has fi… Total - Househo… <span style="text-decoration: underline;">160</span>060</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> 933    Vancouver Other attached dwelling              Total - Househo… <span style="text-decoration: underline;">513</span>900</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 933    Vancouver Semi-detached house                  Total - Househo…  <span style="text-decoration: underline;">20</span>530</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 933    Vancouver Row house                            Total - Househo…  <span style="text-decoration: underline;">93</span>415</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> 933    Vancouver Apartment or flat in a duplex        Total - Househo… <span style="text-decoration: underline;">156</span>445</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 933    Vancouver Apartment in a building that has fe… Total - Househo… <span style="text-decoration: underline;">242</span>200</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 933    Vancouver Other single-attached house          Total - Househo…   <span style="text-decoration: underline;">1</span>310</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 933    Vancouver Movable dwelling                     Total - Househo…   <span style="text-decoration: underline;">4</span>580</span>
+<span class="co">#&gt; <span style="color: #949494;"># … with 20 more rows</span></span></code></pre></div>
+<p>Armed with this we can look at the labour force status by Mobility
+status 5 years ago.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">vancouver_dwelling_income</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
-  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">`Household income statistics`</span><span class="op">==</span><span class="st">"Median total income of households ($)"</span>,
-         <span class="va">`Structural type of dwelling`</span> <span class="op">!=</span> <span class="st">"Other attached dwelling"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">`Structural type of dwelling`</span>,y<span class="op">=</span><span class="va">Value</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html">geom_bar</a></span><span class="op">(</span>stat<span class="op">=</span><span class="st">"identity"</span>,fill<span class="op">=</span><span class="st">"steelblue"</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_y_continuous</a></span><span class="op">(</span>labels<span class="op">=</span><span class="fu">scales</span><span class="fu">::</span><span class="va"><a href="https://scales.r-lib.org/reference/label_dollar.html">dollar</a></span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_brewer.html">scale_fill_brewer</a></span><span class="op">(</span>palette<span class="op">=</span><span class="st">"Set1"</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_flip.html">coord_flip</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title<span class="op">=</span><span class="st">"Metro Vancouver median household income"</span>,
+<code class="sourceCode R"><span class="va">vancouver_dwelling_income</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">`Household income statistics`</span><span class="op">==</span><span class="st">"Median total income of households ($)"</span>,
+         <span class="va">`Structural type of dwelling`</span> <span class="op">!=</span> <span class="st">"Other attached dwelling"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">`Structural type of dwelling`</span>,y<span class="op">=</span><span class="va">Value</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html" class="external-link">geom_bar</a></span><span class="op">(</span>stat<span class="op">=</span><span class="st">"identity"</span>,fill<span class="op">=</span><span class="st">"steelblue"</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_y_continuous</a></span><span class="op">(</span>labels<span class="op">=</span><span class="fu">scales</span><span class="fu">::</span><span class="va"><a href="https://scales.r-lib.org/reference/dollar_format.html" class="external-link">dollar</a></span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_brewer.html" class="external-link">scale_fill_brewer</a></span><span class="op">(</span>palette<span class="op">=</span><span class="st">"Set1"</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_flip.html" class="external-link">coord_flip</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title<span class="op">=</span><span class="st">"Metro Vancouver median household income"</span>,
        y<span class="op">=</span><span class="st">"Median household income"</span>,
        caption<span class="op">=</span><span class="st">"StatCan Census 2016, 98-400-X2016288"</span><span class="op">)</span></code></pre></div>
 <p><img src="Census_xtab_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
@@ -174,11 +193,13 @@
 
 
       <footer><div class="copyright">
-  <p>Developed by Jens von Bergmann.</p>
+  <p></p>
+<p>Developed by Jens von Bergmann.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
 </div>
 
       </footer>
@@ -186,6 +207,8 @@
 
   
 
+
+  
 
   </body>
 </html>

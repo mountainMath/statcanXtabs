@@ -715,6 +715,22 @@ spark_import <- function(path){
   )
 }
 
+#' Collect data and normalize result
+#'
+#' @param connection SQlite connection
+#' @param disconnect Optional parameter to determine if the SQlite connection should be closed, `FALSE` by default.
+#' @return A tibble with the data in long form
+#'
+#' @export
+connect_and_normalize <- function(connection,disconnect=FALSE){
+  data <- connection %>%
+    collect() %>%
+    standardize_xtab()
+
+  if (disconnect) close_sqlite_xtab(connection)
+
+  data
+}
 
 # Suppress warnings for missing bindings for '.' in R CMD check.
 if (getRversion() >= "2.15.1") utils::globalVariables(c("."))

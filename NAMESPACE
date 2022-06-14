@@ -2,6 +2,7 @@
 
 export(clean_xtab_names_transform)
 export(close_sqlite_xtab)
+export(connect_and_normalize)
 export(csv2sqlite)
 export(data2sqlite)
 export(gather_for_grep_string)
