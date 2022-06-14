@@ -1,7 +1,7 @@
 Package: statcanXtabs
 Type: Package
 Title: Helper function for managing StatCan xtabs
-Version: 0.1.1
+Version: 0.1.2
 Author: Jens von Bergmann <jens@mountainmath.ca>
 Maintainer: Jens von Bergmann <jens@mountainmath.ca>
 Description: Methods for importing StatCan xtabs into sqlite and csv form.

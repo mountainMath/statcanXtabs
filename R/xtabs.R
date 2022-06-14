@@ -722,7 +722,7 @@ spark_import <- function(path){
 #' @return A tibble with the data in long form
 #'
 #' @export
-connect_and_normalize <- function(connection,disconnect=FALSE){
+collect_and_normalize <- function(connection,disconnect=FALSE){
   data <- connection %>%
     collect() %>%
     standardize_xtab()

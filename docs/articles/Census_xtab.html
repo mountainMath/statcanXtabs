@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">statcanXtabs</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.2</span>
       </span>
     </div>
 
@@ -81,14 +81,6 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">statcanXtabs</span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Attaching package: 'dplyr'</span>
-<span class="co">#&gt; The following objects are masked from 'package:stats':</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt;     filter, lag</span>
-<span class="co">#&gt; The following objects are masked from 'package:base':</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt;     intersect, setdiff, setequal, union</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></code></pre></div>
 <p>To import a Statistics Canada Census cross tabulation, locate the
 cross tabulation you are interested in <a href="https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/dt-td/Index-eng.cfm?APATH=7&amp;FL=I" class="external-link">on
@@ -149,8 +141,7 @@ form, the <code>standardize_xtab</code> function takes care of that.</p>
          <span class="va">`Household type including census family structure`</span> <span class="op">==</span>
            <span class="st">"Total - Household type including census family structure"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
   <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span>GeoUID<span class="op">=</span><span class="va">`GEO_CODE (POR)`</span>, Name<span class="op">=</span><span class="va">GEO_NAME</span>,<span class="va">`Structural type of dwelling`</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">matches</a></span><span class="op">(</span><span class="st">"^Dim: "</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
-  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
-  <span class="fu"><a href="../reference/standardize_xtab.html">standardize_xtab</a></span><span class="op">(</span><span class="op">)</span>
+  <span class="fu"><a href="../reference/collect_and_normalize.html">collect_and_normalize</a></span><span class="op">(</span>disconnect<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>
 
 <span class="va">vancouver_dwelling_income</span>
 <span class="co">#&gt; <span style="color: #949494;"># A tibble: 30 × 5</span></span>
@@ -180,7 +171,7 @@ status 5 years ago.</p>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_flip.html" class="external-link">coord_flip</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title<span class="op">=</span><span class="st">"Metro Vancouver median household income"</span>,
        y<span class="op">=</span><span class="st">"Median household income"</span>,
-       caption<span class="op">=</span><span class="st">"StatCan Census 2016, 98-400-X2016288"</span><span class="op">)</span></code></pre></div>
+       caption<span class="op">=</span><span class="st">"StatCan Census 2016, 98-400-X2016101"</span><span class="op">)</span></code></pre></div>
 <p><img src="Census_xtab_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
   </div>
 

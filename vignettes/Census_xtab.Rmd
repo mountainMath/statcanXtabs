@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
+```{r setup, warning = FALSE, message = FALSE}
 library(statcanXtabs)
 library(dplyr)
 library(ggplot2)
@@ -50,8 +50,7 @@ vancouver_dwelling_income <- xtab_data %>%
          `Household type including census family structure` ==
            "Total - Household type including census family structure") %>%
   select(GeoUID=`GEO_CODE (POR)`, Name=GEO_NAME,`Structural type of dwelling`, matches("^Dim: ")) %>%
-  collect() %>%
-  standardize_xtab()
+  collect_and_normalize(disconnect=TRUE)
 
 vancouver_dwelling_income
 ```
@@ -69,6 +68,6 @@ vancouver_dwelling_income %>%
   coord_flip() +
   labs(title="Metro Vancouver median household income",
        y="Median household income",
-       caption="StatCan Census 2016, 98-400-X2016288")
+       caption="StatCan Census 2016, 98-400-X2016101")
 ```
 
