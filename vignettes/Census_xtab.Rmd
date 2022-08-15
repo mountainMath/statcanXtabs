@@ -50,7 +50,7 @@ vancouver_dwelling_income <- xtab_data %>%
          `Household type including census family structure` ==
            "Total - Household type including census family structure") %>%
   select(GeoUID=`GEO_CODE (POR)`, Name=GEO_NAME,`Structural type of dwelling`, matches("^Dim: ")) %>%
-  collect_and_normalize(disconnect=TRUE)
+  collect_and_normalize_xtab(disconnect=TRUE)
 
 vancouver_dwelling_income
 ```

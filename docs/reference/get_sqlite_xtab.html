@@ -54,35 +54,48 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">get_sqlite_xtab</span><span class="op">(</span>
-  <span class="va">code</span>,
-  url <span class="op">=</span> <span class="cn">NA</span>,
-  cache_dir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"statcanXtab.cache_dir"</span><span class="op">)</span>,
-  transform <span class="op">=</span> <span class="va">standard_xtab_transform</span>,
-  refresh <span class="op">=</span> <span class="cn">FALSE</span>,
-  existing_unzip_path <span class="op">=</span> <span class="cn">NA</span>,
-  format <span class="op">=</span> <span class="st">"csv"</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">get_sqlite_xtab</span><span class="op">(</span></span>
+<span>  <span class="va">code</span>,</span>
+<span>  url <span class="op">=</span> <span class="cn">NA</span>,</span>
+<span>  cache_dir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"statcanXtab.cache_dir"</span><span class="op">)</span>,</span>
+<span>  transform <span class="op">=</span> <span class="va">standard_xtab_transform</span>,</span>
+<span>  refresh <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  existing_unzip_path <span class="op">=</span> <span class="cn">NA</span>,</span>
+<span>  format <span class="op">=</span> <span class="st">"csv"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>code</dt>
 <dd><p>Code for the xtab, used for local caching</p></dd>
+
+
 <dt>url</dt>
 <dd><p>url to download the csv version of the xtab</p></dd>
+
+
 <dt>cache_dir</dt>
 <dd><p>optional cache directory, default is <code>getOption("statcanXtab.cache_dir")</code>.</p></dd>
+
+
 <dt>transform</dt>
 <dd><p>transform to apply to data, default is <code>standard_xtab_transform</code> which removes the notes
 column, cleans up the variable names and casts the <code>Value</code> column to numeric.</p></dd>
+
+
 <dt>refresh</dt>
 <dd><p>redownload and parse data, default <code>FALSE</code></p></dd>
+
+
 <dt>existing_unzip_path</dt>
 <dd><p>optional path to unzipped xtab, useful for large (&gt;4GB unzipped) xtabs on windows machines</p></dd>
+
+
 <dt>format</dt>
 <dd><p>data format of xtab, defaults to "csv". Other valid options are "xml" and "python_xml". Set according
 to the format of the data, and if conversion through xml should be done via python for better performance</p></dd>
+
 </dl></div>
 
   </div>
@@ -97,7 +110,7 @@ to the format of the data, and if conversion through xml should be done via pyth
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>

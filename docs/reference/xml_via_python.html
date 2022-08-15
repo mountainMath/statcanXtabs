@@ -59,33 +59,44 @@ useful for older (2006) data that does not come as csv option</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">xml_via_python</span><span class="op">(</span>
-  <span class="va">code</span>,
-  <span class="va">url</span>,
-  python_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"python_path"</span><span class="op">)</span>,
-  conda <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"conda_path"</span><span class="op">)</span>,
-  refresh <span class="op">=</span> <span class="cn">FALSE</span>,
-  temp <span class="op">=</span> <span class="cn">NA</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">xml_via_python</span><span class="op">(</span></span>
+<span>  <span class="va">code</span>,</span>
+<span>  <span class="va">url</span>,</span>
+<span>  python_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"python_path"</span><span class="op">)</span>,</span>
+<span>  conda <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"conda_path"</span><span class="op">)</span>,</span>
+<span>  refresh <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  temp <span class="op">=</span> <span class="cn">NA</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>code</dt>
 <dd><p>The statcan table code, needed for caching and for locating the table to extract</p></dd>
+
+
 <dt>url</dt>
 <dd><p>The url to the xml table download. Only needed if the table is not cached, but
 reommended to always include for reproducibility</p></dd>
+
+
 <dt>python_path</dt>
 <dd><p>path to python executable, expects a conda environment 'r-reticulate' to exist.
 Can be set up with `install_python_environment`.</p></dd>
+
+
 <dt>conda</dt>
 <dd><p>local conda</p></dd>
+
+
 <dt>refresh</dt>
 <dd><p>Will refresh cached data if set to TRUE, default is FALSE</p></dd>
+
+
 <dt>temp</dt>
 <dd><p>A path to the downloaded xml zip file. Useful if file has already been downloaded and should not be
 downloaded again.</p></dd>
+
 </dl></div>
 
   </div>
@@ -100,7 +111,7 @@ downloaded again.</p></dd>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer></div>

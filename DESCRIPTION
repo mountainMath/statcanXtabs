@@ -21,7 +21,7 @@ Imports: dplyr (>= 1.0),
   rvest,
   digest,
   tibble
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.1
 Suggests: knitr,
   ggplot2,
   scales,
